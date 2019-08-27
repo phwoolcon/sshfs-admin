@@ -1,0 +1,14 @@
+*{box-sizing:border-box;}
+body{color:#333;font-size:14px;}
+body, button, input, select, textarea{font-family:sans-serif;}
+input{padding:1px 3px;}
+a, a:link, a:visited, a:hover, a:active{color:#333;}
+.wrapper{max-width:400px;margin:0 auto;}
+.hidden, .login-to-access{display:none;}
+form dl.form-inputs{display:flex;flex-wrap:wrap;}
+form dl.form-inputs > dt{flex-grow:1;margin:1em 0 0 0;width:33%;}
+form dl.form-inputs > dt label{display:block;}
+form dl.form-inputs > dd{flex-grow:1;margin:1em 0 0 0;width:66%;}
+form dl.form-inputs input{width:100%;}
+form button[type=submit]{font-size:20px;height:50px;width:100%;}
+#welcome{text-align:right;}

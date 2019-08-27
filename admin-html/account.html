@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width">
+<title>My Account - SSHFS Admin</title>
+<link rel="stylesheet" href="/admin/assets/style.css">
+<div class="wrapper">
+    <h1>SSHFS Admin</h1>
+    <div id="welcome"></div>
+    <dl>
+        <dt><h3>Settings</h3></dt>
+        <dd>
+            <form id="account_settings_form" class="login-to-access" method="post">
+                <dl class="form-inputs">
+                    <dt><label for="session_ttl">Session TTL</label></dt>
+                    <dd><input type="number" id="session_ttl" name="session_ttl">Seconds, 60 &le; TTL &le; 604800</dd>
+                </dl>
+                <div>
+                    <button type="submit">Save</button>
+                </div>
+            </form>
+        </dd>
+        <dt><h3>Change password</h3></dt>
+        <dd>
+            <form id="change_password_form" class="login-to-access" method="post">
+                <dl class="form-inputs">
+                    <dt><label for="old_password">Old password</label></dt>
+                    <dd><input type="password" id="old_password" name="old_password" required></dd>
+                    <dt><label for="new_password">New password</label></dt>
+                    <dd><input type="password" id="new_password" name="new_password" required></dd>
+                    <dt><label for="confirm_new_password">Repeat password</label></dt>
+                    <dd><input type="password" id="confirm_new_password" required></dd>
+                </dl>
+                <div>
+                    <button type="submit">Save</button>
+                </div>
+            </form>
+        </dd>
+    </dl>
+</div>
+<script src="/admin/assets/onload.js"></script>
