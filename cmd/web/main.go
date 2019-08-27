@@ -12,14 +12,14 @@ import (
 
 func setupRouter() *gin.Engine {
 	router := gin.Default()
-	router.Static("/admin", "./admin-html")
-	router.LoadHTMLFiles("admin-html/404.html")
+	router.Static("/admin", "./web/admin")
+	router.LoadHTMLFiles("./web/admin/404.html")
 	router.NoRoute(func(context *gin.Context) {
-		if strings.HasPrefix(context.Request.RequestURI, "/admin/") {
-			context.HTML(http.StatusNotFound, "404.html", nil)
+		if strings.HasPrefix(context.Request.RequestURI, "/api/") {
+			context.JSON(http.StatusNotFound, gin.H{"error": "404 not found"})
 			return
 		}
-		context.JSON(http.StatusNotFound, gin.H{"error": "404 not found"})
+		context.HTML(http.StatusNotFound, "404.html", nil)
 	})
 
 	apiRouter := router.Group("/api")
