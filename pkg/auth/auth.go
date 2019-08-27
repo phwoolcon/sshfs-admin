@@ -25,8 +25,7 @@ type Users map[string]User
 func LoginRequiredMiddleware(context *gin.Context) {
 	user, err := getSessionUser(context);
 	if err != nil {
-		context.Abort()
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "Login required"})
+		context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Login required"})
 		return
 	}
 	context.Set("user", user)
