@@ -4,7 +4,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/memstore"
 	"github.com/gin-gonic/gin"
-	"sshfs-admin/auth"
+	"sshfs-admin/pkg/auth"
 )
 
 func setupRouter() *gin.Engine {
