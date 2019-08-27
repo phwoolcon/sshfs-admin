@@ -5,6 +5,7 @@ import (
 	"github.com/gin-contrib/sessions/memstore"
 	"github.com/gin-gonic/gin"
 	"sshfs-admin/pkg/auth"
+	"sshfs-admin/pkg/depts"
 )
 
 func setupRouter() *gin.Engine {
@@ -15,6 +16,7 @@ func setupRouter() *gin.Engine {
 
 	apiRouter := router.Group("/api")
 	auth.SetupRouter(apiRouter)
+	depts.SetupRouter(apiRouter)
 
 	return router
 }

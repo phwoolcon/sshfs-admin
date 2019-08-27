@@ -22,14 +22,28 @@ type User struct {
 
 type Users map[string]User
 
+func LoginRequiredMiddleware(context *gin.Context) {
+	user, err := getSessionUser(context);
+	if err != nil {
+		context.Abort()
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Login required"})
+		return
+	}
+	context.Set("user", user)
+	context.Next()
+}
+
 func SetupRouter(apiRouter *gin.RouterGroup) {
-	route := apiRouter.Group("/auth")
-	route.GET("/status", routeStatus)
-	route.GET("/logout", routeLogout)
-	route.POST("/login", routeLogin)
-	route.GET("/settings", routeGetSettings)
-	route.POST("/settings", routeSaveSettings)
-	route.POST("/change-pass", routeChangePassword)
+	public := apiRouter.Group("/auth")
+	public.GET("/status", routeStatus)
+	public.GET("/logout", routeLogout)
+	public.POST("/login", routeLogin)
+
+	private := apiRouter.Group("/auth")
+	private.Use(LoginRequiredMiddleware)
+	private.GET("/settings", routeGetSettings)
+	private.POST("/settings", routeSaveSettings)
+	private.POST("/change-pass", routeChangePassword)
 }
 
 func getSessionUser(context *gin.Context) (user User, err error) {
@@ -65,12 +79,8 @@ func loadUsers() (users Users) {
 func routeChangePassword(context *gin.Context) {
 	oldPassword := context.PostForm("old_password")
 	newPassword := context.PostForm("new_password")
-	user, err := getSessionUser(context);
-	if err != nil {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "Login required"})
-		return
-	}
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword))
+	user := context.MustGet("user").(User)
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword))
 	if err != nil {
 		fmt.Println("Attempt to change password failed for user: " + user.Username)
 		context.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credential"})
@@ -84,11 +94,7 @@ func routeChangePassword(context *gin.Context) {
 }
 
 func routeGetSettings(context *gin.Context) {
-	user, err := getSessionUser(context);
-	if err != nil {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "Login required"})
-		return
-	}
+	user := context.MustGet("user").(User)
 	context.JSON(http.StatusOK, gin.H{"session_ttl": user.SessionTtl})
 }
 
@@ -138,11 +144,7 @@ func routeSaveSettings(context *gin.Context) {
 		context.JSON(http.StatusUnauthorized, gin.H{"error": "Session TTL should be between 60 and 604800"})
 		return
 	}
-	user, err := getSessionUser(context);
-	if err != nil {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "Login required"})
-		return
-	}
+	user := context.MustGet("user").(User)
 	fmt.Println("Settings changed successfully for user: " + user.Username)
 	user.SessionTtl = sessionTtl
 	saveUser(user)
