@@ -12,7 +12,7 @@ import (
 	"strconv"
 )
 
-const usersFile string = "/data/admin/users.json"
+const usersFile string = "/data/users.json"
 
 type User struct {
 	Username   string `json:"username"`
