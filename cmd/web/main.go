@@ -7,8 +7,12 @@ import (
 	"net/http"
 	"sshfs-admin/pkg/auth"
 	"sshfs-admin/pkg/depts"
+	"sshfs-admin/pkg/session"
+	"sshfs-admin/pkg/users"
 	"strings"
 )
+
+var GinMode string
 
 func setupRouter() *gin.Engine {
 	router := gin.Default()
@@ -23,15 +27,22 @@ func setupRouter() *gin.Engine {
 	})
 
 	apiRouter := router.Group("/api")
-	apiRouter.Use(sessions.Sessions("auth", memstore.NewStore([]byte("secret"))))
+
+	memstore.NewStore([]byte("secret"))
+
+	apiRouter.Use(sessions.Sessions("auth", session.NewFileStore("/data/session", []byte("secret"))))
 
 	auth.SetupRouter(apiRouter)
 	depts.SetupRouter(apiRouter)
+	users.SetupRouter(apiRouter)
 
 	return router
 }
 
 func main() {
+	if GinMode == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	engine := setupRouter()
 	// Listen and Server in 0.0.0.0:8080
 	engine.Run(":8000")

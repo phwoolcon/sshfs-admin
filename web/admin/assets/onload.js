@@ -2,6 +2,14 @@
     let loggedInUser = null;
 
     const pageEvents = {
+        '/': function () {
+            apiRequest('depts/count').then(function (data) {
+                data.count && (getElementById('dept_count').innerHTML = '(' + data.count + ')');
+            });
+            apiRequest('users/count').then(function (data) {
+                data.count && (getElementById('user_count').innerHTML = '(' + data.count + ')');
+            });
+        },
         '/login': function () {
             const form = getElementById('login_form');
             form.addEventListener('submit', function (e) {
@@ -38,9 +46,45 @@
                 return false;
             });
 
-            request('auth/settings').then(function (data) {
+            apiRequest('auth/settings').then(function (data) {
                 data.session_ttl && (getElementById('session_ttl').value = data.session_ttl)
             }).catch(catchAlert);
+        },
+        '/depts': function () {
+            const deptList = getElementById('depts');
+            apiRequest('depts').then(function (data) {
+                let child;
+                console.debug(data);
+                if (!data.depts) {
+                    throw new Error('Something went wrong')
+                }
+                while (child = deptList.firstChild) {
+                    deptList.removeChild(child)
+                }
+                data.depts.forEach(function (dept) {
+                    const li = d.createElement('li');
+                    li.innerHTML = '<a href="">{dept}</a>'.replace('{dept}', dept);
+                    deptList.appendChild(li)
+                });
+            })
+        },
+        '/users': function () {
+            const userList = getElementById('users');
+            apiRequest('users').then(function (data) {
+                let child;
+                console.debug(data);
+                if (!data.users) {
+                    throw new Error('Something went wrong')
+                }
+                while (child = userList.firstChild) {
+                    userList.removeChild(child)
+                }
+                data.users.forEach(function (user) {
+                    const li = d.createElement('li');
+                    li.innerHTML = '<a href="">{user}</a>'.replace('{user}', user);
+                    userList.appendChild(li)
+                });
+            })
         },
     }, pagePrefix = '/admin', pageSuffix = '.html', publicPages = ['/login', '/logout'], console = w.console;
 
@@ -58,13 +102,28 @@
         });
     }
 
+    /**
+     * @returns {Promise}
+     */
+    function apiRequest(url, options) {
+        options = Object.assign({credentials: 'same-origin', cache: 'no-store'}, options || {});
+        return fetch('/api/' + url, options).then(function (response) {
+            return response.json();
+        }).then(function (data) {
+            if (data.error) {
+                throw new Error(data.error)
+            }
+            return data;
+        });
+    }
+
     function catchAlert(error) {
         console.error(error);
         alert(error.message);
     }
 
     function checkLoginStatus() {
-        return request('auth/status').then(function (data) {
+        return apiRequest('auth/status').then(function (data) {
             loggedInUser = data.username;
         });
     }
@@ -104,27 +163,12 @@
 
     function postFormUrlEncoded(url, form) {
         const data = new URLSearchParams(new FormData(form));
-        return request(url, {
+        return apiRequest(url, {
             method: 'post',
             body: data,
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-        });
-    }
-
-    /**
-     * @returns {Promise}
-     */
-    function request(url, options) {
-        options = Object.assign({credentials: 'same-origin', cache: 'no-store'}, options || {});
-        return fetch('/api/' + url, options).then(function (response) {
-            return response.json();
-        }).then(function (data) {
-            if (data.error) {
-                throw new Error(data.error)
-            }
-            return data;
         });
     }
 
@@ -140,7 +184,7 @@
             container.innerHTML = template.replace('{user}', loggedInUser)
                 .replace('{account_url}', pageUrl('/account'));
             getElementById('logout').addEventListener('click', function () {
-                request('auth/logout').then(function () {
+                apiRequest('auth/logout').then(function () {
                     navigateTo('/login');
                 });
             });

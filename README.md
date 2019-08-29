@@ -5,9 +5,9 @@ This is the admin panel for [Secure LAN Storage](https://github.com/phwoolcon/do
 ## Features
 * [x] Admin login/logout
 * [x] Change account settings/password
-* [ ] Department list
+* [x] Department list
 * [ ] Department CRUD
-* [ ] User list
+* [x] User list
 * [ ] User CRUD
 * [ ] Create or change ssh key for user
 * [ ] User-department assignment (1 to 1 at this stage)
