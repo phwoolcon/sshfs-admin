@@ -62,8 +62,10 @@
                     deptList.removeChild(child)
                 }
                 data.depts.forEach(function (dept) {
-                    const li = d.createElement('li');
-                    li.innerHTML = '<a href="">{dept}</a>'.replace('{dept}', dept);
+                    const li = d.createElement('li'), listHtml = [];
+                    listHtml.push('<a href="javascript:" data-dept="{dept}">{dept}</a>'.replace(/{dept}/g, dept));
+                    // TODO Add user list, folder size
+                    li.innerHTML = listHtml.join("\n");
                     deptList.appendChild(li)
                 });
             })
@@ -183,13 +185,27 @@
                 '<a href="{account_url}">Account</a> | <a id="logout" href="javascript:">Logout</a>';
             container.innerHTML = template.replace('{user}', loggedInUser)
                 .replace('{account_url}', pageUrl('/account'));
-            getElementById('logout').addEventListener('click', function () {
+            d.on('click', '#logout', function () {
                 apiRequest('auth/logout').then(function () {
                     navigateTo('/login');
                 });
             });
         }
     }
+
+    d.on = function (eventName, selector, handler) {
+        const click = 'ontouchstart' in d.documentElement ? 'touchend' : 'click';
+        eventName === 'click' && (eventName = click);
+        d.addEventListener(eventName, function (event) {
+            for (var target = event.target || event.srcElement; target && target !== this; target = target.parentNode) {
+                // loop parent nodes from the target to the delegation node
+                if (target.matches(selector)) {
+                    handler.call(target, event);
+                    break;
+                }
+            }
+        }, false);
+    };
 
     checkLoginStatus().finally(init);
 }(window, document, location);
