@@ -1,19 +1,19 @@
-!function (w, d, l) {
+((w, d, l) => {
     let loggedInUser = null;
 
     const pageEvents = {
-        '/': function () {
-            apiRequest('depts/count').then(function (data) {
+        '/': () => {
+            apiRequest('depts/count').then(data => {
                 data.count && (getElementById('dept_count').innerHTML = '(' + data.count + ')');
             });
-            apiRequest('users/count').then(function (data) {
+            apiRequest('users/count').then(data => {
                 data.count && (getElementById('user_count').innerHTML = '(' + data.count + ')');
             });
         },
-        '/login': function () {
+        '/login': () => {
             const form = getElementById('login_form');
-            form.addEventListener('submit', function (e) {
-                postFormUrlEncoded('auth/login', form).then(function (data) {
+            form.addEventListener('submit', e => {
+                postFormUrlEncoded('auth/login', form).then(data => {
                     console.debug(data);
                     if (data.username) {
                         navigateTo('/index');
@@ -23,56 +23,66 @@
                 return false;
             })
         },
-        '/account': function () {
+        '/account': () => {
             const passwordForm = getElementById('change_password_form'),
                 settingsForm = getElementById('account_settings_form'),
-                showDataMessage = function (data) {
+                showDataMessage = data => {
                     console.debug(data);
                     if (!data.message) {
                         throw new Error('Something went wrong')
                     }
                     alert(data.message);
                 };
-            passwordForm.addEventListener('submit', function (e) {
+            passwordForm.addEventListener('submit', e => {
                 postFormUrlEncoded('auth/change-pass', passwordForm).then(showDataMessage)
-                    .then(passwordForm.reset).catch(catchAlert);
+                    .then(() => passwordForm.reset()).catch(catchAlert);
                 e.preventDefault();
                 return false;
             });
 
-            settingsForm.addEventListener('submit', function (e) {
+            settingsForm.addEventListener('submit', e => {
                 postFormUrlEncoded('auth/settings', settingsForm).then(showDataMessage).catch(catchAlert);
                 e.preventDefault();
                 return false;
             });
 
-            apiRequest('auth/settings').then(function (data) {
+            apiRequest('auth/settings').then(data => {
                 data.session_ttl && (getElementById('session_ttl').value = data.session_ttl)
             }).catch(catchAlert);
         },
-        '/depts': function () {
-            const deptList = getElementById('depts');
-            apiRequest('depts').then(function (data) {
-                let child;
-                console.debug(data);
-                if (!data.depts) {
-                    throw new Error('Something went wrong')
-                }
-                while (child = deptList.firstChild) {
-                    deptList.removeChild(child)
-                }
-                data.depts.forEach(function (dept) {
-                    const li = d.createElement('li'), listHtml = [];
-                    listHtml.push('<a href="javascript:" data-dept="{dept}">{dept}</a>'.replace(/{dept}/g, dept));
-                    // TODO Add user list, folder size
-                    li.innerHTML = listHtml.join("\n");
-                    deptList.appendChild(li)
+        '/depts': () => {
+            const loadDepartmentList = () => {
+                const deptList = getElementById('depts');
+                apiRequest('depts').then(data => {
+                    let child;
+                    console.debug(data);
+                    if (!data.depts) {
+                        throw new Error('Something went wrong')
+                    }
+                    while (child = deptList.firstChild) {
+                        deptList.removeChild(child)
+                    }
+                    data.depts.forEach(dept => {
+                        const li = newElement('li'), listHtml = [];
+                        listHtml.push('<a href="javascript:" data-dept="{dept}">{dept}</a>'.replace(/{dept}/g, dept.name));
+                        listHtml.push('({usage})'.replace(/{usage}/g, dept.usage));
+                        // TODO Add user list
+                        li.innerHTML = listHtml.join("\n");
+                        deptList.appendChild(li)
+                    });
                 });
-            })
+            }, newDepartmentForm = getElementById('new_dept_form');
+            loadDepartmentList();
+            newDepartmentForm.addEventListener('submit', e => {
+                postFormUrlEncoded('depts/create', newDepartmentForm).then(loadDepartmentList)
+                    .then(() => newDepartmentForm.reset()).catch(catchAlert);
+                e.preventDefault();
+                return false;
+            });
         },
-        '/users': function () {
+        '/users': () => {
             const userList = getElementById('users');
-            apiRequest('users').then(function (data) {
+            apiRequest('users').then(data => {
                 let child;
                 console.debug(data);
                 if (!data.users) {
@@ -81,8 +91,8 @@
                 while (child = userList.firstChild) {
                     userList.removeChild(child)
                 }
-                data.users.forEach(function (user) {
-                    const li = d.createElement('li');
+                data.users.forEach(user => {
+                    const li = newElement('li');
                     li.innerHTML = '<a href="">{user}</a>'.replace('{user}', user);
                     userList.appendChild(li)
                 });
@@ -98,8 +108,9 @@
             return;
         }
         showWelcome();
+        initTogglers();
         listenPageEvents(pageRoute);
-        loginToAccess.forEach(function (e) {
+        loginToAccess.forEach(e => {
             e.classList.remove('login-to-access');
         });
     }
@@ -109,10 +120,10 @@
      */
     function apiRequest(url, options) {
         options = Object.assign({credentials: 'same-origin', cache: 'no-store'}, options || {});
-        return fetch('/api/' + url, options).then(function (response) {
+        return fetch('/api/' + url, options).then(response => {
             return response.json();
-        }).then(function (data) {
-            if (data.error) {
+        }).then(data => {
+            if (data.hasOwnProperty('error')) {
                 throw new Error(data.error)
             }
             return data;
@@ -125,7 +136,7 @@
     }
 
     function checkLoginStatus() {
-        return apiRequest('auth/status').then(function (data) {
+        return apiRequest('auth/status').then(data => {
             loggedInUser = data.username;
         });
     }
@@ -140,6 +151,17 @@
 
     function getPageRoute() {
         return l.pathname.slice(pagePrefix.length, -pageSuffix.length) || '/';
+    }
+
+    function initTogglers() {
+        d.on('click', '[data-toggle-target]', e => {
+            const toggler = e.target, target = getElementById(toggler.dataset.toggleTarget),
+                hidden = 'hidden', nextAction = target.classList.contains(hidden) ? 'remove' : 'add';
+            if (!target) {
+                return;
+            }
+            target.classList[nextAction](hidden);
+        });
     }
 
     function listenPageEvents(pageRoute) {
@@ -159,8 +181,12 @@
         return publicPages.indexOf(route) < 0;
     }
 
+    function newElement(tagName, options) {
+        return d.createElement(tagName, options);
+    }
+
     function pageUrl(route) {
-        return pagePrefix + (route.charAt(0) === '/' ? '' : '/') + route + pageSuffix;
+        return pagePrefix + (route.charAt(0) === '/' ? '' : '/') + (route ? route + pageSuffix : '');
     }
 
     function postFormUrlEncoded(url, form) {
@@ -174,32 +200,61 @@
         });
     }
 
+    function putElementAfter(element, afterMe) {
+        afterMe.parentNode.insertBefore(element, afterMe.nextSibling);
+    }
+
+    function showBreadcrumbAfterWelcome(welcome) {
+        const breadcrumb = newElement('ol'), routes = ('home' + getPageRoute()).split('/').filter(route => {
+            return route.length > 0;
+        }), current = routes.pop(), currentLi = newElement('li'), linkStack = [], routeLabel = route => {
+            return route.charAt(0).toUpperCase() + route.slice(1);
+        };
+
+        routes.forEach(route => {
+            if (!route.length) {
+                return;
+            }
+            linkStack.push(route === 'home' ? '' : route);
+            const li = newElement('li');
+            li.classList.add('link');
+            li.innerHTML = '<a href="' + pageUrl(linkStack.join('/')) + '">' + routeLabel(route) + '</a>';
+            breadcrumb.appendChild(li);
+        });
+        currentLi.innerHTML = routeLabel(current);
+        breadcrumb.appendChild(currentLi);
+        breadcrumb.id = 'breadcrumb';
+        putElementAfter(breadcrumb, welcome);
+    }
+
     function showWelcome() {
         let template;
         const container = getElementById('welcome');
         if (!container) {
             return;
         }
+        showBreadcrumbAfterWelcome(container);
         if (loggedInUser) {
             template = 'Welcome, {user} | ' +
                 '<a href="{account_url}">Account</a> | <a id="logout" href="javascript:">Logout</a>';
             container.innerHTML = template.replace('{user}', loggedInUser)
                 .replace('{account_url}', pageUrl('/account'));
-            d.on('click', '#logout', function () {
-                apiRequest('auth/logout').then(function () {
+            d.on('click', '#logout', () => {
+                apiRequest('auth/logout').then(() => {
                     navigateTo('/login');
                 });
             });
         }
     }
 
-    d.on = function (eventName, selector, handler) {
+    d.on = (eventName, selector, handler) => {
         const click = 'ontouchstart' in d.documentElement ? 'touchend' : 'click';
         eventName === 'click' && (eventName = click);
-        d.addEventListener(eventName, function (event) {
-            for (var target = event.target || event.srcElement; target && target !== this; target = target.parentNode) {
+        d.addEventListener(eventName, event => {
+            for (let target = event.target; target && target !== d; target = target.parentNode) {
                 // loop parent nodes from the target to the delegation node
                 if (target.matches(selector)) {
+                    event.target = target;
                     handler.call(target, event);
                     break;
                 }
@@ -208,4 +263,4 @@
     };
 
     checkLoginStatus().finally(init);
-}(window, document, location);
+})(window, document, location);

@@ -6,6 +6,20 @@
 <div class="wrapper">
     <h1>SSHFS Admin</h1>
     <div id="welcome"></div>
-    <ul id="depts"></ul>
+    <div class="login-to-access">
+        <div class="toolbar">
+            <button id="new_dept" data-toggle-target="new_dept_form">+ New department...</button>
+        </div>
+        <form id="new_dept_form" method="post" class="hidden">
+            <dl class="form-inputs">
+                <dt><label for="name">Name</label></dt>
+                <dd><input id="name" name="name" required></dd>
+            </dl>
+            <div>
+                <button type="submit">Create</button>
+            </div>
+        </form>
+        <ul id="depts"></ul>
+    </div>
 </div>
 <script src="/admin/assets/onload.js"></script>

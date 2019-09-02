@@ -7,18 +7,6 @@ import (
 	"strings"
 )
 
-func GetDepartments() (departments []string) {
-	return sshfsExec("sf_get_departments")
-}
-
-func GetDepartmentUsers(department string) (users []string) {
-	return sshfsExec("sf_get_department_users " + department)
-}
-
-func GetUsers() (users []string) {
-	return sshfsExec("sf_get_users")
-}
-
 func sshfsExec(command string) (result []string) {
 	cmd := exec.Command("./scripts/sshfs", command)
 	cmdOutput := &bytes.Buffer{}

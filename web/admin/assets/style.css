@@ -12,3 +12,7 @@ form dl.form-inputs > dd{flex-grow:1;margin:1em 0 0 0;width:66%;}
 form dl.form-inputs input{width:100%;}
 form button[type=submit]{font-size:20px;height:50px;width:100%;}
 #welcome{text-align:right;}
+#breadcrumb, #breadcrumb li{list-style:none;}
+#breadcrumb{display:flex;padding:0;}
+#breadcrumb li.link:after{content:"\00bb";margin:0 .5em;}
+.toolbar{text-align:right;}
