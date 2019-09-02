@@ -81,22 +81,52 @@
             });
         },
         '/users': () => {
-            const userList = getElementById('users');
-            apiRequest('users').then(data => {
-                let child;
-                console.debug(data);
-                if (!data.users) {
-                    throw new Error('Something went wrong')
-                }
-                while (child = userList.firstChild) {
-                    userList.removeChild(child)
-                }
-                data.users.forEach(user => {
-                    const li = newElement('li');
-                    li.innerHTML = '<a href="">{user}</a>'.replace('{user}', user);
-                    userList.appendChild(li)
-                });
-            })
+            const newUserForm = getElementById('new_user_form'), departmentsSelect = getElementById('dept'),
+                submitButton = getElementsBySelector('#new_user_form [type=submit]')[0],
+                loadUserList = () => {
+                    const userList = getElementById('users');
+                    apiRequest('users').then(data => {
+                        let child;
+                        console.debug(data);
+                        if (!data.users) {
+                            throw new Error('Something went wrong')
+                        }
+                        while (child = userList.firstChild) {
+                            userList.removeChild(child)
+                        }
+                        data.users.forEach(user => {
+                            const li = newElement('li');
+                            li.innerHTML = '<a href="">{user}</a>'.replace('{user}', user);
+                            userList.appendChild(li)
+                        });
+                    });
+                }, loadDepartmentOptions = () => {
+                    apiRequest('depts/options').then(data => {
+                        console.debug(data);
+                        const options = data.options;
+                        if (!options) {
+                            return;
+                        }
+                        while (departmentsSelect.options.length > 1) {
+                            departmentsSelect.remove(1);
+                        }
+                        for (const key of Object.keys(options)) {
+                            const option = newElement('option');
+                            option.value = key;
+                            option.text = options[key];
+                            departmentsSelect.add(option);
+                        }
+                    }).finally(submitButton.disabled = false);
+                };
+            submitButton.disabled = true;
+            loadUserList();
+            loadDepartmentOptions();
+            newUserForm.addEventListener('submit', e => {
+                postFormUrlEncoded('users/create', newUserForm).then(loadUserList)
+                    .then(() => newUserForm.reset()).catch(catchAlert);
+                e.preventDefault();
+                return false;
+            });
         },
     }, pagePrefix = '/admin', pageSuffix = '.html', publicPages = ['/login', '/logout'], console = w.console;
 
@@ -189,15 +219,19 @@
         return pagePrefix + (route.charAt(0) === '/' ? '' : '/') + (route ? route + pageSuffix : '');
     }
 
+    /**
+     * @returns {Promise}
+     */
     function postFormUrlEncoded(url, form) {
-        const data = new URLSearchParams(new FormData(form));
+        const data = new URLSearchParams(new FormData(form)), submitButton = form.querySelectorAll('[type=submit]');
+        submitButton.forEach(e => e.disabled = true);
         return apiRequest(url, {
             method: 'post',
             body: data,
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-        });
+        }).finally(() => submitButton.forEach(e => e.disabled = false));
     }
 
     function putElementAfter(element, afterMe) {

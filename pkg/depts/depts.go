@@ -19,6 +19,7 @@ func SetupRouter(apiRouter *gin.RouterGroup) {
 	route := apiRouter.Group("/depts")
 	route.Use(auth.LoginRequiredMiddleware)
 	route.GET("", routeList)
+	route.GET("/options", routeOptions)
 	route.GET("/count", routeCount)
 	route.POST("/create", routeCreate)
 }
@@ -57,4 +58,12 @@ func routeList(context *gin.Context) {
 		departments = append(departments, DepartmentUsage{Name: usageInfo[1], Usage: usageInfo[0]})
 	}
 	context.JSON(http.StatusOK, gin.H{"depts": departments})
+}
+
+func routeOptions(context *gin.Context) {
+	options := make(map[string]string)
+	for _, department := range sshfs.GetDepartments() {
+		options[department] = department
+	}
+	context.JSON(http.StatusOK, gin.H{"options": options})
 }

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+USERNAME=$1
+{
+    mkdir -p /data/tmp
+    rm -f "/data/tmp/${USERNAME}.key" "/data/tmp/${USERNAME}.key.pub"
+    mv "/tmp/${USERNAME}.key" /data/tmp/
+    mv "/tmp/${USERNAME}.key.pub" /data/tmp/
+} > /dev/null 2>&1

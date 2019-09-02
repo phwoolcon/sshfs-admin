@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+USERNAME=$1
+PRIV_KEY=/tmp/${USERNAME}.key
+PUB_KEY=/tmp/${USERNAME}.key.pub
+
+rm -f "${PRIV_KEY}" "${PUB_KEY}"
+ssh-keygen -t rsa -b 4096 -C "${USERNAME}" -f "${PRIV_KEY}" -q -N ""
+cat "${PUB_KEY}"
