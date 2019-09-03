@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+USERNAME=$1
+PUB_KEY=/data/tmp/${USERNAME}.key.pub
+
+printf $(md5sum "${PUB_KEY}" 2>/dev/null || echo 1)
+echo

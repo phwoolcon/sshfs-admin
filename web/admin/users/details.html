@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width">
+<title>User Details - SSHFS Admin</title>
+<link rel="stylesheet" href="/admin/assets/style.css">
+<div class="wrapper">
+    <h1>SSHFS Admin</h1>
+    <div id="welcome"></div>
+    <div class="login-to-access">
+        <form id="edit_user_form" method="post">
+            <dl class="form-inputs">
+                <dt><label for="name">Name</label></dt>
+                <dd><input id="name" name="name" readonly></dd>
+                <dt><label for="dept">Department</label></dt>
+                <dd><select id="dept" name="dept" class="input" required></select></dd>
+            </dl>
+            <div>
+                <button type="submit">Save</button>
+            </div>
+        </form>
+        <h3 id="download_header">Copy and send this link to {user}</h3>
+        <p><a id="download_link" href="javascript:"></a></p>
+    </div>
+</div>
+<script src="/admin/assets/onload.js"></script>

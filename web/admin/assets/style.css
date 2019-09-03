@@ -9,10 +9,11 @@ form dl.form-inputs{display:flex;flex-wrap:wrap;}
 form dl.form-inputs > dt{flex-grow:1;margin:1em 0 0 0;width:33%;}
 form dl.form-inputs > dt label{display:block;}
 form dl.form-inputs > dd{flex-grow:1;margin:1em 0 0 0;width:66%;}
-form dl.form-inputs input,form dl.form-inputs .input{width:100%;}
-form button[type=submit]{font-size:20px;height:50px;width:100%;}
+form dl.form-inputs input, form dl.form-inputs .input{width:100%;}
+form button[type=submit], .full-width-button{font-size:20px;height:50px;width:100%;}
 #welcome{text-align:right;}
 #breadcrumb, #breadcrumb li{list-style:none;}
 #breadcrumb{display:flex;padding:0;}
 #breadcrumb li.link:after{content:"\00bb";margin:0 .5em;}
 .toolbar{text-align:right;}
+.download-grid{display:grid;grid-gap:1em;grid-template-columns:1fr 1fr;}

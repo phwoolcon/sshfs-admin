@@ -1,15 +1,11 @@
 package main
 
 import (
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/memstore"
 	"github.com/gin-gonic/gin"
-	"net/http"
 	"sshfs-admin/pkg/auth"
+	"sshfs-admin/pkg/base"
 	"sshfs-admin/pkg/depts"
-	"sshfs-admin/pkg/session"
 	"sshfs-admin/pkg/users"
-	"strings"
 )
 
 var GinMode string
@@ -17,24 +13,16 @@ var GinMode string
 func setupRouter() *gin.Engine {
 	router := gin.Default()
 	router.Static("/admin", "./web/admin")
-	router.LoadHTMLFiles("./web/admin/404.html")
-	router.NoRoute(func(context *gin.Context) {
-		if strings.HasPrefix(context.Request.RequestURI, "/api/") {
-			context.JSON(http.StatusNotFound, gin.H{"error": "404 not found"})
-			return
-		}
-		context.HTML(http.StatusNotFound, "404.html", nil)
-	})
+	router.LoadHTMLFiles("./web/admin/404.html", "./web/admin/download.html")
+	router.NoRoute(base.Route404)
 
 	apiRouter := router.Group("/api")
-
-	memstore.NewStore([]byte("secret"))
-
-	apiRouter.Use(sessions.Sessions("auth", session.NewFileStore("/data/session", []byte("secret"))))
+	apiRouter.Use(base.Session())
 
 	auth.SetupRouter(apiRouter)
 	depts.SetupRouter(apiRouter)
-	users.SetupRouter(apiRouter)
+	users.SetupApiRouter(apiRouter)
+	users.SetupFrontRouter(router)
 
 	return router
 }
