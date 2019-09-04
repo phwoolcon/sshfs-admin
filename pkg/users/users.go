@@ -25,32 +25,89 @@ func SetupApiRouter(apiRouter *gin.RouterGroup) {
 
 func SetupFrontRouter(router *gin.Engine) {
 	router.GET("/download/:token", frontRouteDownloadPage)
+	router.GET("/download/:token/config", frontRouteDownloadConfig)
+	router.GET("/download/:token/key", frontRouteDownloadKey)
+	router.GET("/api/users/has-key/:token", frontRouteHasKey)
 }
 
-func frontRouteDownloadPage(context *gin.Context) {
-	token := strings.Split(context.Param("token"), "~")
+func convertTokenToUserName(tokenString string) string {
+	token := strings.Split(tokenString, "~")
 	if len(token) != 2 {
-		base.Route404(context)
-		return
+		return ""
 	}
 	name := token[0]
 	hash := token[1]
 	expectedHash := getUserHash(name)
 	if !verifyName(name) || hash != expectedHash {
+		return ""
+	}
+	if !sshfs.UserExists(name) {
+		return ""
+	}
+	return name
+}
+
+func frontRouteDownloadConfig(context *gin.Context) {
+	name := convertTokenToUserName(context.Param("token"))
+	if name == "" {
+		base.Route404(context)
+		return
+	}
+	configTemplate := `HOST=%s
+PORT=%s
+USER=%s
+DRIVE=Z
+
+`
+	app := base.GetConfig()
+	context.Header("content-disposition", "attachment; filename=config.ini")
+	context.String(http.StatusOK, configTemplate, app.SshfsHost, app.SshfsPort, name)
+}
+
+func frontRouteDownloadKey(context *gin.Context) {
+	name := convertTokenToUserName(context.Param("token"))
+	if name == "" {
+		base.Route404(context)
+		return
+	}
+	privateKey := base.LocalExec("./scripts/sshkey_download", name)
+	if privateKey[0] == "" {
+		base.Route404(context)
+		return
+	}
+	context.Header("content-disposition", "attachment; filename=ssh.key")
+	context.String(http.StatusOK, strings.Join(privateKey, "\n"))
+}
+
+func frontRouteDownloadPage(context *gin.Context) {
+	name := convertTokenToUserName(context.Param("token"))
+	if name == "" {
 		base.Route404(context)
 		return
 	}
 	context.HTML(http.StatusOK, "download.html", nil)
 }
 
+func frontRouteHasKey(context *gin.Context) {
+	context.JSON(http.StatusOK, gin.H{"result": hasPrivateKey(context.Param("token"))})
+}
+
 func getUserHash(name string) (hash string) {
-	sshKeyHash := base.LocalExec("./scripts/sshkey_md5", name)[0]
-	crc32Checksum := crc32.ChecksumIEEE([]byte(name + "|" + base.GetConfig().SecretKey + sshKeyHash))
+	sshKeySum := base.LocalExec("./scripts/sshkey_sum", name)[0]
+	crc32Checksum := crc32.ChecksumIEEE([]byte(name + "|" + base.GetConfig().HashSalt + sshKeySum))
 	crc32Byte := make([]byte, 4)
 	crc32Base64 := make([]byte, base64.RawURLEncoding.EncodedLen(len(crc32Byte)))
 	binary.LittleEndian.PutUint32(crc32Byte, crc32Checksum)
 	base64.RawURLEncoding.Encode(crc32Base64, []byte(crc32Byte))
 	return string(crc32Base64)
+}
+
+func hasPrivateKey(token string) bool {
+	name := convertTokenToUserName(token)
+	if name == "" {
+		return false
+	}
+	return base.IsFile(fmt.Sprintf(`/data/tmp/%s.key`, name))
 }
 
 func routeCreate(context *gin.Context) {

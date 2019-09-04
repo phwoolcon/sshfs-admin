@@ -1,150 +1,156 @@
 ((w, d, l) => {
     let loggedInUser = null;
 
-    const pageEvents = {
-            '/': () => {
-                apiRequest('depts/count').then(data => {
-                    data.count && (getElementById('dept_count').innerHTML = '(' + data.count + ')');
-                });
-                apiRequest('users/count').then(data => {
-                    data.count && (getElementById('user_count').innerHTML = '(' + data.count + ')');
-                });
-            },
-            '/login': () => {
-                const form = getElementById('login_form');
-                form.addEventListener('submit', e => {
-                    postFormUrlEncoded('auth/login', form).then(data => {
-                        console.debug(data);
-                        if (data.username) {
-                            navigateTo('/index');
-                        }
-                    }).catch(catchAlert);
-                    e.preventDefault();
-                    return false;
-                })
-            },
-            '/account': () => {
-                const passwordForm = getElementById('change_password_form'),
-                    settingsForm = getElementById('account_settings_form'),
-                    showDataMessage = data => {
-                        console.debug(data);
-                        if (!data.message) {
-                            throw new Error('Something went wrong')
-                        }
-                        alert(data.message);
-                    };
-                passwordForm.addEventListener('submit', e => {
-                    postFormUrlEncoded('auth/change-pass', passwordForm).then(showDataMessage)
-                        .then(() => passwordForm.reset()).catch(catchAlert);
-                    e.preventDefault();
-                    return false;
-                });
-
-                settingsForm.addEventListener('submit', e => {
-                    postFormUrlEncoded('auth/settings', settingsForm).then(showDataMessage).catch(catchAlert);
-                    e.preventDefault();
-                    return false;
-                });
-
-                apiRequest('auth/settings').then(data => {
-                    data.session_ttl && (getElementById('session_ttl').value = data.session_ttl)
+    const pagePrefix = '/admin', pageSuffix = '.html', console = w.console, pageEvents = {
+        '/': () => {
+            apiRequest('depts/count').then(data => {
+                data.count && (getElementById('dept_count').innerHTML = '(' + data.count + ')');
+            });
+            apiRequest('users/count').then(data => {
+                data.count && (getElementById('user_count').innerHTML = '(' + data.count + ')');
+            });
+        },
+        '/login': () => {
+            const form = getElementById('login_form');
+            form.addEventListener('submit', e => {
+                postFormUrlEncoded('auth/login', form).then(data => {
+                    console.debug(data);
+                    if (data.username) {
+                        navigateTo('/index');
+                    }
                 }).catch(catchAlert);
-            },
-            '/depts': () => {
-                const loadDepartmentList = () => {
-                    const deptList = getElementById('depts');
-                    apiRequest('depts').then(data => {
+                e.preventDefault();
+                return false;
+            })
+        },
+        '/account': () => {
+            const passwordForm = getElementById('change_password_form'),
+                settingsForm = getElementById('account_settings_form'),
+                showDataMessage = data => {
+                    console.debug(data);
+                    if (!data.message) {
+                        throw new Error('Something went wrong')
+                    }
+                    alert(data.message);
+                };
+            passwordForm.addEventListener('submit', e => {
+                postFormUrlEncoded('auth/change-pass', passwordForm).then(showDataMessage)
+                    .then(() => passwordForm.reset()).catch(catchAlert);
+                e.preventDefault();
+                return false;
+            });
+
+            settingsForm.addEventListener('submit', e => {
+                postFormUrlEncoded('auth/settings', settingsForm).then(showDataMessage).catch(catchAlert);
+                e.preventDefault();
+                return false;
+            });
+
+            apiRequest('auth/settings').then(data => {
+                data.session_ttl && (getElementById('session_ttl').value = data.session_ttl)
+            }).catch(catchAlert);
+        },
+        '/depts': () => {
+            const loadDepartmentList = () => {
+                const deptList = getElementById('depts');
+                apiRequest('depts').then(data => {
+                    let child;
+                    console.debug(data);
+                    if (!data.depts) {
+                        throw new Error('Something went wrong')
+                    }
+                    while (child = deptList.firstChild) {
+                        deptList.removeChild(child)
+                    }
+                    data.depts.forEach(dept => {
+                        const li = newElement('li'), listHtml = [];
+                        listHtml.push('<a href="javascript:" data-dept="{dept}">{dept}</a>'.replace(/{dept}/g, dept.name));
+                        listHtml.push('({usage})'.replace(/{usage}/g, dept.usage));
+                        // TODO Add user list
+                        li.innerHTML = listHtml.join("\n");
+                        deptList.appendChild(li)
+                    });
+                });
+            }, newDepartmentForm = getElementById('new_dept_form');
+            loadDepartmentList();
+            newDepartmentForm.addEventListener('submit', e => {
+                postFormUrlEncoded('depts/create', newDepartmentForm).then(loadDepartmentList)
+                    .then(() => newDepartmentForm.reset()).catch(catchAlert);
+                e.preventDefault();
+                return false;
+            });
+        },
+        '/users': () => {
+            const newUserForm = getElementById('new_user_form'), departmentsSelect = getElementById('dept'),
+                submitButton = getElementsBySelector('#new_user_form [type=submit]')[0],
+                loadUserList = () => {
+                    const userList = getElementById('users');
+                    apiRequest('users').then(data => {
                         let child;
                         console.debug(data);
-                        if (!data.depts) {
+                        if (!data.users) {
                             throw new Error('Something went wrong')
                         }
-                        while (child = deptList.firstChild) {
-                            deptList.removeChild(child)
+                        while (child = userList.firstChild) {
+                            userList.removeChild(child)
                         }
-                        data.depts.forEach(dept => {
-                            const li = newElement('li'), listHtml = [];
-                            listHtml.push('<a href="javascript:" data-dept="{dept}">{dept}</a>'.replace(/{dept}/g, dept.name));
-                            listHtml.push('({usage})'.replace(/{usage}/g, dept.usage));
-                            // TODO Add user list
-                            li.innerHTML = listHtml.join("\n");
-                            deptList.appendChild(li)
+                        data.users.forEach(user => {
+                            const li = newElement('li');
+                            li.innerHTML = '<a href="/admin/users/details.html?user={user}">{user}</a>'
+                                .replace(/{user}/g, user);
+                            userList.appendChild(li)
                         });
                     });
-                }, newDepartmentForm = getElementById('new_dept_form');
-                loadDepartmentList();
-                newDepartmentForm.addEventListener('submit', e => {
-                    postFormUrlEncoded('depts/create', newDepartmentForm).then(loadDepartmentList)
-                        .then(() => newDepartmentForm.reset()).catch(catchAlert);
-                    e.preventDefault();
-                    return false;
+                };
+            submitButton.disabled = true;
+            loadUserList();
+            loadDepartmentOptions(departmentsSelect, 1).finally(() => submitButton.disabled = false);
+            newUserForm.addEventListener('submit', e => {
+                postFormUrlEncoded('users/create', newUserForm).then(loadUserList)
+                    .then(() => newUserForm.reset()).catch(catchAlert);
+                e.preventDefault();
+                return false;
+            });
+        },
+        '/users/details': () => {
+            const editUserForm = getElementById('edit_user_form'),
+                nameInput = getElementById('name'),
+                departmentsSelect = getElementById('dept'),
+                submitButton = getElementsBySelector('#edit_user_form [type=submit]')[0],
+                downloadHeader = getElementById('download_header'),
+                downloadLink = getElementById('download_link'),
+                user = getUrlParam('user');
+            nameInput.value = user;
+            submitButton.disabled = true;
+            downloadHeader.innerHTML = downloadHeader.innerHTML.replace(/{user}/g, user);
+            apiRequest('users/details', {queryParams: {user: user}})
+                .then(data => {
+                    console.debug(data);
+                    if (!data.token || !data.dept) {
+                        return;
+                    }
+                    downloadLink.value = l.origin + '/download/' + data.token;
+                    loadDepartmentOptions(departmentsSelect, 0).finally(() => {
+                        departmentsSelect.value = data.dept;
+                        submitButton.disabled = false;
+                    })
                 });
-            },
-            '/users': () => {
-                const newUserForm = getElementById('new_user_form'), departmentsSelect = getElementById('dept'),
-                    submitButton = getElementsBySelector('#new_user_form [type=submit]')[0],
-                    loadUserList = () => {
-                        const userList = getElementById('users');
-                        apiRequest('users').then(data => {
-                            let child;
-                            console.debug(data);
-                            if (!data.users) {
-                                throw new Error('Something went wrong')
-                            }
-                            while (child = userList.firstChild) {
-                                userList.removeChild(child)
-                            }
-                            data.users.forEach(user => {
-                                const li = newElement('li');
-                                li.innerHTML = '<a href="/admin/users/details.html?user={user}">{user}</a>'
-                                    .replace(/{user}/g, user);
-                                userList.appendChild(li)
-                            });
-                        });
-                    };
-                submitButton.disabled = true;
-                loadUserList();
-                loadDepartmentOptions(departmentsSelect, 1).finally(() => submitButton.disabled = false);
-                newUserForm.addEventListener('submit', e => {
-                    postFormUrlEncoded('users/create', newUserForm).then(loadUserList)
-                        .then(() => newUserForm.reset()).catch(catchAlert);
-                    e.preventDefault();
-                    return false;
-                });
-            },
-            '/users/details': () => {
-                const editUserForm = getElementById('edit_user_form'),
-                    nameInput = getElementById('name'),
-                    departmentsSelect = getElementById('dept'),
-                    submitButton = getElementsBySelector('#edit_user_form [type=submit]')[0],
-                    downloadHeader = getElementById('download_header'),
-                    downloadLink = getElementById('download_link'),
-                    user = getUrlParam('user');
-                nameInput.value = user;
-                submitButton.disabled = true;
-                downloadHeader.innerHTML = downloadHeader.innerHTML.replace(/{user}/g, user);
-                d.on('click', downloadLink, e => e.preventDefault() && false);
-                apiRequest('users/details', {queryParams: {user: user}})
-                    .then(data => {
-                        if (!data.token || !data.dept) {
-                            return;
-                        }
-                        downloadLink.innerHTML = downloadLink.href = l.origin + '/download/' + data.token;
-                        loadDepartmentOptions(departmentsSelect, 0).finally(() => {
-                            departmentsSelect.value = data.dept;
-                            submitButton.disabled = false;
-                        })
-                    });
-                editUserForm.addEventListener('submit', e => {
-                    postFormUrlEncoded('users/edit', editUserForm).catch(catchAlert);
-                    e.preventDefault();
-                    return false;
-                });
-            },
-            '/front-download': () => {
-            }
-        }, pagePrefix = '/admin', pageSuffix = '.html', publicPages = ['/login', '/logout', '/front-download'],
-        console = w.console;
+            editUserForm.addEventListener('submit', e => {
+                postFormUrlEncoded('users/edit', editUserForm).catch(catchAlert);
+                e.preventDefault();
+                return false;
+            });
+        },
+        '/front-download': () => {
+            const configDownload = getElementById('user_config'), keyDownload = getElementById('ssh_key'),
+                token = l.pathname.split('/').pop();
+            configDownload.href = l.origin + l.pathname + '/config';
+            keyDownload.href = l.origin + l.pathname + '/key';
+            apiRequest('users/has-key/' + token).then(data => {
+                data.result && keyDownload.parentNode.classList.remove('hidden');
+            });
+        }
+    }, publicPages = ['/login', '/logout', '/front-download'];
 
     function init() {
         const pageRoute = getPageRoute(), loginToAccess = getElementsBySelector('.login-to-access');

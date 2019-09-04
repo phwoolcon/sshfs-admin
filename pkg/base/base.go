@@ -19,8 +19,9 @@ var config Config
 
 type Config struct {
 	loaded    bool
-	SecretKey string `json:"secret_key"`
+	HashSalt  string `json:"hash_salt"`
 	SshfsHost string `json:"sshfs_host"`
+	SshfsPort string `json:"sshfs_port"`
 }
 
 func GetConfig() Config {
@@ -28,6 +29,14 @@ func GetConfig() Config {
 		loadConfig()
 	}
 	return config
+}
+
+func IsFile(name string) bool {
+	info, err := os.Stat(name)
+	if err != nil {
+		return false
+	}
+	return !info.IsDir()
 }
 
 func loadConfig() {

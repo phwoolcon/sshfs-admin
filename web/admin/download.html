@@ -7,15 +7,24 @@
     <h1>SSHFS Admin</h1>
     <h3>Downloads</h3>
     <div class="download-grid flex-2">
-        <a id="user_config" href="" download="">
-            <button class="full-width-button">Client Config</button>
+        <a id="user_config" href="" download="config.ini">
+            <button class="full-width-button">config.ini</button>
         </a>
-        <div>
-            <a id="ssh_key" href="" download="">
-                <button class="full-width-button">Private Key</button>
+        <div class="hidden">
+            <a id="ssh_key" href="" download="ssh.key">
+                <button class="full-width-button">ssh.key</button>
             </a>
             <div>Only available once</div>
         </div>
     </div>
+    <h4>For Windows users</h4>
+    <ol>
+        <li>Open Explorer</li>
+        <li>Enter <kbd>%USERPROFILE%</kbd> in the address bar</li>
+        <li>Create folder <kbd>sshfs</kbd> if doesn't have one</li>
+        <li>Save <kbd>config.ini</kbd> and <kbd>ssh.key</kbd> to folder <kbd>sshfs</kbd></li>
+    </ol>
+    <h4>CAUTION</h4>
+    <p>The <kbd>ssh.key</kbd> is only available once, ask the system administrator to regenerate if you lose it.</p>
 </div>
 <script src="/admin/assets/onload.js"></script>

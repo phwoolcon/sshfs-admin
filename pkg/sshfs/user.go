@@ -21,3 +21,7 @@ func GetUserDepartments(name string) (result []string) {
 func GetUsers() (users []string) {
 	return sshfsExec("sf_user_list")
 }
+
+func UserExists(name string) bool {
+	return sshfsExec(fmt.Sprintf(`sf_user_exists "%s"`, name))[0] == "1"
+}

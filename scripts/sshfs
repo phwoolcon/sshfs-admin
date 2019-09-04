@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
-ssh -oStrictHostKeyChecking=accept-new root@sshfs bash -lc "'$@'"
+cd "$(dirname "${BASH_SOURCE[0]}")"
+ssh -F ./ssh.config sshfs bash -lc "'$@'"
