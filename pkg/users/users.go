@@ -29,6 +29,7 @@ func SetupFrontRouter(router *gin.Engine) {
 	router.GET("/download/:token/config", frontRouteDownloadConfig)
 	router.GET("/download/:token/key", frontRouteDownloadKey)
 	router.GET("/api/users/has-key/:token", frontRouteHasKey)
+	router.POST("/api/users/regenerate-key/:token", frontRouteRegenerateKey)
 }
 
 func convertTokenToUserName(tokenString string) string {
@@ -91,6 +92,20 @@ func frontRouteDownloadPage(context *gin.Context) {
 
 func frontRouteHasKey(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"result": hasPrivateKey(context.Param("token"))})
+}
+
+func frontRouteRegenerateKey(context *gin.Context) {
+	name := convertTokenToUserName(context.Param("token"))
+	if name == "" {
+		base.Route404(context)
+		return
+	}
+	result := sshfs.RegenerateKey(name)
+	if result[0] != "ok" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": result[0]})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"new_token": name + "~" + getUserHash(name)})
 }
 
 func getUserHash(name string) (hash string) {

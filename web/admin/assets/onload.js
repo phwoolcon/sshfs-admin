@@ -128,7 +128,7 @@
             apiRequest('users/details', {queryParams: {user: user}})
                 .then(data => {
                     console.debug(data);
-                    if (!data.token || !data.dept) {
+                    if (!data.token) {
                         return;
                     }
                     downloadLink.value = l.origin + '/download/' + data.token;
@@ -150,11 +150,21 @@
         },
         '/front-download': () => {
             const configDownload = getElementById('user_config'), keyDownload = getElementById('ssh_key'),
-                token = l.pathname.split('/').pop();
+                regenerateButton = getElementById('regenerate'), token = l.pathname.split('/').pop();
             configDownload.href = l.origin + l.pathname + '/config';
             keyDownload.href = l.origin + l.pathname + '/key';
             apiRequest('users/has-key/' + token).then(data => {
                 data.result && keyDownload.parentNode.classList.remove('hidden');
+            });
+            d.on('click', regenerateButton, e => {
+                apiRequest('users/regenerate-key/' + token, {method: 'post'}).then(data => {
+                    if (!data.new_token) {
+                        return;
+                    }
+                    const newUrl = l.origin + '/download/' + data.new_token;
+                    alert('! NOTICE !\nYour download URL has been changed to:\n' + newUrl);
+                    l.replace(newUrl);
+                });
             });
         }
     }, publicPages = ['/login', '/logout', '/front-download'];
