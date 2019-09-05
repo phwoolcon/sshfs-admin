@@ -5,7 +5,7 @@ import (
 	"sshfs-admin/pkg/base"
 )
 
-func CreateUser(name string, department string) (result []string) {
+func CreateUser(name, department string) (result []string) {
 	sshKey := base.LocalExec("./scripts/sshkey_gen", name)[0]
 	result = sshfsExec(fmt.Sprintf(`sf_user_add_only "%s" "%s" "%s"`, name, department, sshKey))
 	if result[0] == "ok" {
@@ -24,6 +24,10 @@ func GetUsers() (users []string) {
 
 func RenameUser(name string, newName string) []string {
 	return sshfsExec(fmt.Sprintf(`sf_user_rename "%s" "%s"`, name, newName))
+}
+
+func UpdateUserDepartment(name, department string) []string {
+	return sshfsExec(fmt.Sprintf(`sf_user_update "%s" "%s"`, name, department))
 }
 
 func UserExists(name string) bool {

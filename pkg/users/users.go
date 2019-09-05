@@ -140,6 +140,12 @@ func routeDetails(context *gin.Context) {
 		base.Route404(context)
 		return
 	}
+	if !sshfs.UserExists(user) {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"error": "The user you are editing does not exist",
+		})
+		return
+	}
 	department := sshfs.GetUserDepartments(user)[0]
 	context.JSON(http.StatusOK, gin.H{"dept": department, "token": user + "~" + getUserHash(user)})
 }
@@ -155,9 +161,7 @@ func routeEdit(context *gin.Context) {
 		return
 	}
 	if !sshfs.UserExists(name) {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"error": "The user you are editing does not exist",
-		})
+		context.JSON(http.StatusBadRequest, gin.H{"error": "The user you are editing does not exist"})
 		return
 	}
 	department := sshfs.GetUserDepartments(name)[0]
@@ -171,7 +175,15 @@ func routeEdit(context *gin.Context) {
 		}
 	}
 	if department != newDepartment {
+		renameResult := sshfs.UpdateUserDepartment(newName, newDepartment)
+		if renameResult[0] != "ok" {
+			context.JSON(http.StatusBadRequest, gin.H{
+				"error": renameResult[0],
+			})
+			return
+		}
 	}
+	context.JSON(http.StatusOK, gin.H{"user": newName})
 }
 
 func routeList(context *gin.Context) {

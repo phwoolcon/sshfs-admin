@@ -18,7 +18,7 @@
                     if (data.username) {
                         navigateTo('/index');
                     }
-                }).catch(catchAlert);
+                });
                 e.preventDefault();
                 return false;
             })
@@ -35,20 +35,20 @@
                 };
             passwordForm.addEventListener('submit', e => {
                 postFormUrlEncoded('auth/change-pass', passwordForm).then(showDataMessage)
-                    .then(() => passwordForm.reset()).catch(catchAlert);
+                    .then(() => passwordForm.reset());
                 e.preventDefault();
                 return false;
             });
 
             settingsForm.addEventListener('submit', e => {
-                postFormUrlEncoded('auth/settings', settingsForm).then(showDataMessage).catch(catchAlert);
+                postFormUrlEncoded('auth/settings', settingsForm).then(showDataMessage);
                 e.preventDefault();
                 return false;
             });
 
             apiRequest('auth/settings').then(data => {
                 data.session_ttl && (getElementById('session_ttl').value = data.session_ttl)
-            }).catch(catchAlert);
+            });
         },
         '/depts': () => {
             const loadDepartmentList = () => {
@@ -75,7 +75,7 @@
             loadDepartmentList();
             newDepartmentForm.addEventListener('submit', e => {
                 postFormUrlEncoded('depts/create', newDepartmentForm).then(loadDepartmentList)
-                    .then(() => newDepartmentForm.reset()).catch(catchAlert);
+                    .then(() => newDepartmentForm.reset());
                 e.preventDefault();
                 return false;
             });
@@ -107,7 +107,7 @@
             loadDepartmentOptions(departmentsSelect, 1).finally(() => submitButton.disabled = false);
             newUserForm.addEventListener('submit', e => {
                 postFormUrlEncoded('users/create', newUserForm).then(loadUserList)
-                    .then(() => newUserForm.reset()).catch(catchAlert);
+                    .then(() => newUserForm.reset());
                 e.preventDefault();
                 return false;
             });
@@ -138,7 +138,12 @@
                     })
                 });
             editUserForm.addEventListener('submit', e => {
-                postFormUrlEncoded('users/edit', editUserForm).catch(catchAlert);
+                postFormUrlEncoded('users/edit', editUserForm).then(data => {
+                    if (!data.user) {
+                        return;
+                    }
+                    l.replace(l.origin + l.pathname + '?user=' + data.user);
+                });
                 e.preventDefault();
                 return false;
             });
@@ -185,17 +190,16 @@
                 throw new Error(data.error)
             }
             return data;
+        }).catch(error => {
+            console.error(error);
+            alert(error.message);
+            return false
         });
     }
 
     function buildQueryParams(params) {
         const esc = encodeURIComponent;
         return Object.keys(params).map(k => esc(k) + '=' + esc(params[k])).join('&');
-    }
-
-    function catchAlert(error) {
-        console.error(error);
-        alert(error.message);
     }
 
     function checkLoginStatus() {
