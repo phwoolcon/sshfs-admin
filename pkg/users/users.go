@@ -21,6 +21,7 @@ func SetupApiRouter(apiRouter *gin.RouterGroup) {
 	route.GET("/count", routeCount)
 	route.GET("/details", routeDetails)
 	route.POST("/create", routeCreate)
+	route.POST("/edit", routeEdit)
 }
 
 func SetupFrontRouter(router *gin.Engine) {
@@ -141,6 +142,36 @@ func routeDetails(context *gin.Context) {
 	}
 	department := sshfs.GetUserDepartments(user)[0]
 	context.JSON(http.StatusOK, gin.H{"dept": department, "token": user + "~" + getUserHash(user)})
+}
+
+func routeEdit(context *gin.Context) {
+	name := context.PostForm("orig_name")
+	newName := context.PostForm("name")
+	newDepartment := context.PostForm("dept")
+	if !verifyName(newName) || !verifyName(name) {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"error": "User name must begin with a letter, and be between 3 and 15 characters of \"A-Za-z0-9.-_\"",
+		})
+		return
+	}
+	if !sshfs.UserExists(name) {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"error": "The user you are editing does not exist",
+		})
+		return
+	}
+	department := sshfs.GetUserDepartments(name)[0]
+	if name != newName {
+		renameResult := sshfs.RenameUser(name, newName)
+		if renameResult[0] != "ok" {
+			context.JSON(http.StatusBadRequest, gin.H{
+				"error": renameResult[0],
+			})
+			return
+		}
+	}
+	if department != newDepartment {
+	}
 }
 
 func routeList(context *gin.Context) {

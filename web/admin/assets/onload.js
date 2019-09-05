@@ -114,15 +114,17 @@
         },
         '/users/details': () => {
             const editUserForm = getElementById('edit_user_form'),
+                originalNameInput = getElementById('orig_name'),
                 nameInput = getElementById('name'),
                 departmentsSelect = getElementById('dept'),
                 submitButton = getElementsBySelector('#edit_user_form [type=submit]')[0],
                 downloadHeader = getElementById('download_header'),
                 downloadLink = getElementById('download_link'),
                 user = getUrlParam('user');
-            nameInput.value = user;
+            originalNameInput.value = nameInput.value = user;
             submitButton.disabled = true;
             downloadHeader.innerHTML = downloadHeader.innerHTML.replace(/{user}/g, user);
+            downloadLink.addEventListener('focus', e => downloadLink.select());
             apiRequest('users/details', {queryParams: {user: user}})
                 .then(data => {
                     console.debug(data);

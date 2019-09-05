@@ -8,9 +8,12 @@
     <div id="welcome"></div>
     <div class="login-to-access">
         <form id="edit_user_form" method="post">
+            <div class="hidden">
+                <input type="hidden" id="orig_name" name="orig_name">
+            </div>
             <dl class="form-inputs">
                 <dt><label for="name">Name</label></dt>
-                <dd><input id="name" name="name" readonly></dd>
+                <dd><input id="name" name="name"></dd>
                 <dt><label for="dept">Department</label></dt>
                 <dd><select id="dept" name="dept" class="input" required></select></dd>
             </dl>

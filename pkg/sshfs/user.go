@@ -22,6 +22,10 @@ func GetUsers() (users []string) {
 	return sshfsExec("sf_user_list")
 }
 
+func RenameUser(name string, newName string) []string {
+	return sshfsExec(fmt.Sprintf(`sf_user_rename "%s" "%s"`, name, newName))
+}
+
 func UserExists(name string) bool {
 	return sshfsExec(fmt.Sprintf(`sf_user_exists "%s"`, name))[0] == "1"
 }
