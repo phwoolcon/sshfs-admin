@@ -32,6 +32,10 @@ func main() {
 	if GinMode == "release" {
 		gin.SetMode(gin.ReleaseMode)
 	}
+	accessStatus := base.SshfsRootAccess()
+	if accessStatus[0] != "ok" {
+		panic(accessStatus)
+	}
 	base.Version = Version
 	engine := setupRouter()
 	// Listen and Server in 0.0.0.0:8080

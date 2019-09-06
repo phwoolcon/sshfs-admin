@@ -82,3 +82,7 @@ func Route404(context *gin.Context) {
 func Session() gin.HandlerFunc {
 	return sessions.Sessions("auth", session.NewFileStore("/data/session", []byte("secret")))
 }
+
+func SshfsRootAccess() []string {
+	return LocalExec("./scripts/sshfs_root_access")
+}

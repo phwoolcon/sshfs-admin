@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+function ok() {
+    echo ok
+}
+
+mkdir -p /data/.ssh
+
+[[ -f /data/.ssh/id_rsa ]] && ok && exit
+
+ssh-keygen -t rsa -b 4096 -C "sshfs-admin" -f /data/.ssh/id_rsa -q -N ""
+cat /data/.ssh/id_rsa.pub >> /data/sshfs/etc/root.ssh/authorized_keys
+
+ok
