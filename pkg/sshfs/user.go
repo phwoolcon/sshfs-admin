@@ -22,6 +22,10 @@ func GetUsers() (users []string) {
 	return sshfsExec("sf_user_list")
 }
 
+func GetUsersWithUsages() (users []string) {
+	return sshfsExec("sf_user_usages_list")
+}
+
 func RenameUser(name string, newName string) []string {
 	return sshfsExec(fmt.Sprintf(`sf_user_rename "%s" "%s"`, name, newName))
 }

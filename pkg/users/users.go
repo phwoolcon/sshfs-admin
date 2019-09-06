@@ -14,6 +14,11 @@ import (
 	"strings"
 )
 
+type UserUsage struct {
+	Name  string `json:"name"`
+	Usage string `json:"usage"`
+}
+
 func SetupApiRouter(apiRouter *gin.RouterGroup) {
 	route := apiRouter.Group("/users")
 	route.Use(auth.LoginRequiredMiddleware)
@@ -202,7 +207,15 @@ func routeEdit(context *gin.Context) {
 }
 
 func routeList(context *gin.Context) {
-	users := sshfs.GetUsers()
+	userUsages := sshfs.GetUsersWithUsages()
+	users := make([]UserUsage, 0)
+	for _, usage := range userUsages {
+		usageInfo := strings.Fields(usage)
+		if len(usageInfo) != 2 {
+			continue
+		}
+		users = append(users, UserUsage{Name: usageInfo[1], Usage: usageInfo[0]})
+	}
 	context.JSON(http.StatusOK, gin.H{"users": users})
 }
 

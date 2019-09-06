@@ -96,8 +96,8 @@
                         }
                         data.users.forEach(user => {
                             const li = newElement('li');
-                            li.innerHTML = '<a href="/admin/users/details.html?user={user}">{user}</a>'
-                                .replace(/{user}/g, user);
+                            li.innerHTML = '<a href="/admin/users/details.html?user={user}">{user}</a> ({usage})'
+                                .replace(/{user}/g, user.name).replace(/{usage}/g, user.usage);
                             userList.appendChild(li)
                         });
                     });
