@@ -5,6 +5,8 @@ input{padding:1px 3px;}
 a, a:link, a:visited, a:hover, a:active{color:#333;}
 .wrapper{max-width:400px;margin:0 auto;}
 .hidden, .login-to-access{display:none;}
+h1{align-items:center;display:flex;justify-content:space-between;}
+h1 .version{font-size:12px;font-weight:normal;}
 form dl.form-inputs{display:flex;flex-wrap:wrap;}
 form dl.form-inputs > dt{flex-grow:1;margin:1em 0 0 0;width:33%;}
 form dl.form-inputs > dt label{display:block;}

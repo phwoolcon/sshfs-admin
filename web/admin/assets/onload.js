@@ -1,5 +1,5 @@
 ((w, d, l) => {
-    let loggedInUser = null;
+    let loggedInUser = null, version = "dev";
 
     const pagePrefix = '/admin', pageSuffix = '.html', console = w.console, pageEvents = {
         '/': () => {
@@ -170,12 +170,16 @@
     }, publicPages = ['/login', '/logout', '/front-download'];
 
     function init() {
-        const pageRoute = getPageRoute(), loginToAccess = getElementsBySelector('.login-to-access');
+        const pageRoute = getPageRoute(), loginToAccess = getElementsBySelector('.login-to-access'),
+            header = getElementsBySelector('h1')[0], versionSpan = newElement('span');
         console.debug(loggedInUser, pageRoute);
         if (needLogin(pageRoute)) {
             navigateTo('/login');
             return;
         }
+        versionSpan.classList.add('version');
+        versionSpan.innerHTML = version;
+        header.appendChild(versionSpan);
         showWelcome();
         initTogglers();
         listenPageEvents(pageRoute);
@@ -215,6 +219,7 @@
     function checkLoginStatus() {
         return apiRequest('auth/status').then(data => {
             loggedInUser = data.username;
+            version = data.version;
         });
     }
 

@@ -9,6 +9,7 @@ import (
 )
 
 var GinMode string
+var Version string = "dev"
 
 func setupRouter() *gin.Engine {
 	router := gin.Default()
@@ -31,6 +32,7 @@ func main() {
 	if GinMode == "release" {
 		gin.SetMode(gin.ReleaseMode)
 	}
+	base.Version = Version
 	engine := setupRouter()
 	// Listen and Server in 0.0.0.0:8080
 	engine.Run(":8000")

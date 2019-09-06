@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"os"
+	"sshfs-admin/pkg/base"
 	"strconv"
 )
 
@@ -152,7 +153,7 @@ func routeSaveSettings(context *gin.Context) {
 
 func routeStatus(context *gin.Context) {
 	user, _ := getSessionUser(context)
-	context.JSON(http.StatusOK, gin.H{"username": user.Username})
+	context.JSON(http.StatusOK, gin.H{"username": user.Username, "version": base.Version})
 }
 
 func saveUser(user User) {

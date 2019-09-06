@@ -16,6 +16,7 @@ import (
 const ConfigFile string = "/data/config.json"
 
 var config Config
+var Version string
 
 type Config struct {
 	loaded    bool
