@@ -1,5 +1,5 @@
 ((w, d, l) => {
-    let loggedInUser = null, version = "dev";
+    let loggedInUser = null, version = "dev", createAdmin = false;
 
     const pagePrefix = '/admin', pageSuffix = '.html', console = w.console, pageEvents = {
         '/': () => {
@@ -9,6 +9,20 @@
             apiRequest('users/count').then(data => {
                 data.count && (getElementById('user_count').innerHTML = '(' + data.count + ')');
             });
+        },
+        '/init': () => {
+            const form = getElementById('init_form');
+            form.addEventListener('submit', e => {
+                postFormUrlEncoded('auth/init', form).then(data => {
+                    console.debug(data);
+                    if (data.message) {
+                        alert(data.message);
+                        navigateTo('/login');
+                    }
+                });
+                e.preventDefault();
+                return false;
+            })
         },
         '/login': () => {
             const form = getElementById('login_form');
@@ -167,12 +181,20 @@
                 });
             });
         }
-    }, publicPages = ['/login', '/logout', '/front-download'];
+    }, publicPages = ['/init', '/login', '/logout', '/front-download'];
 
     function init() {
         const pageRoute = getPageRoute(), loginToAccess = getElementsBySelector('.login-to-access'),
             header = getElementsBySelector('h1')[0], versionSpan = newElement('span');
         console.debug(loggedInUser, pageRoute);
+        if (!createAdmin && pageRoute === '/init') {
+            navigateTo('/index');
+            return;
+        }
+        if (createAdmin && pageRoute !== '/init') {
+            navigateTo('/init');
+            return;
+        }
         if (needLogin(pageRoute)) {
             navigateTo('/login');
             return;
@@ -182,6 +204,7 @@
         header.appendChild(versionSpan);
         showWelcome();
         initTogglers();
+        initRepeatPassword();
         listenPageEvents(pageRoute);
         loginToAccess.forEach(e => {
             e.classList.remove('login-to-access');
@@ -220,6 +243,7 @@
         return apiRequest('auth/status').then(data => {
             loggedInUser = data.username;
             version = data.version;
+            createAdmin = !!data.create_admin;
         });
     }
 
@@ -240,6 +264,22 @@
 
     function getUrlParam(name) {
         return (new URL(l.href)).searchParams.get(name);
+    }
+
+    function initRepeatPassword() {
+        let reverseCheck = false, setValidity = (repeat, password) => {
+            repeat.setCustomValidity(repeat.value === password.value ? '' : 'Password must be repeated exactly');
+        };
+        d.on('change', '[data-repeat-password]', e => {
+            const repeat = e.target, password = getElementById(repeat.dataset.repeatPassword);
+            setValidity(repeat, password);
+            if (reverseCheck) {
+                return;
+            }
+            d.on('change', password, e => {
+                setValidity(repeat, password);
+            });
+        });
     }
 
     function initTogglers() {

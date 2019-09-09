@@ -2,13 +2,13 @@ package auth
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"os"
+	"regexp"
 	"sshfs-admin/pkg/base"
 	"strconv"
 )
@@ -38,6 +38,7 @@ func SetupRouter(apiRouter *gin.RouterGroup) {
 	public.GET("/status", routeStatus)
 	public.GET("/logout", routeLogout)
 	public.POST("/login", routeLogin)
+	public.POST("/init", routeInit)
 
 	private := apiRouter.Group("/auth")
 	private.Use(LoginRequiredMiddleware)
@@ -54,11 +55,14 @@ func getSessionUser(context *gin.Context) (user User, err error) {
 
 func findUser(username string) (user User, err error) {
 	users := loadUsers()
+	if len(users) == 0 {
+		return User{}, ErrNoUsersYet()
+	}
 	user, ok := users[username]
 	if ok {
 		return user, nil
 	}
-	return User{}, errors.New("Attempt to login as non-existing user: " + username)
+	return User{}, ErrLoginAsNonExisting(username)
 }
 
 func loadUsers() (users Users) {
@@ -96,6 +100,26 @@ func routeChangePassword(context *gin.Context) {
 func routeGetSettings(context *gin.Context) {
 	user := context.MustGet("user").(User)
 	context.JSON(http.StatusOK, gin.H{"session_ttl": user.SessionTtl})
+}
+
+func routeInit(context *gin.Context) {
+	if users := loadUsers(); len(users) > 0 {
+		base.Route404(context)
+		return
+	}
+	username := context.PostForm("username")
+	password := context.PostForm("password")
+	if !verifyName(username) {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid username"})
+		return
+	}
+	if len(password) < 6 {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Password must be at least 6 characters long"})
+		return
+	}
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), 5)
+	saveUser(User{Username: username, Password: string(hashedPassword), SessionTtl: 3600})
+	context.JSON(http.StatusOK, gin.H{"message": "Administrator account initiated, please login"})
 }
 
 func routeLogin(context *gin.Context) {
@@ -152,8 +176,16 @@ func routeSaveSettings(context *gin.Context) {
 }
 
 func routeStatus(context *gin.Context) {
-	user, _ := getSessionUser(context)
-	context.JSON(http.StatusOK, gin.H{"username": user.Username, "version": base.Version})
+	user, err := getSessionUser(context)
+	username := ""
+	if err == nil {
+		username = user.Username
+	} else if err == ErrNoUsersYet() {
+		err.Error()
+		context.JSON(http.StatusOK, gin.H{"username": "", "version": base.Version, "create_admin": true})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"username": username, "version": base.Version})
 }
 
 func saveUser(user User) {
@@ -172,4 +204,9 @@ func saveUser(user User) {
 		fmt.Println(err)
 		return
 	}
+}
+
+func verifyName(name string) bool {
+	validName := regexp.MustCompile(`^[A-Za-z][\w.\-]{2,14}$`)
+	return validName.MatchString(name)
 }
