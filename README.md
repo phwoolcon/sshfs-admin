@@ -18,3 +18,5 @@ This is the admin panel for [Secure LAN Storage](https://github.com/phwoolcon/do
     - [x] Regenerate ssh key (Old keys will be abandoned)
     - [x] Update department assignment (1 to 1 at this stage)
     - [x] Config download page
+* [x] System settings
+* [x] Disk usage
