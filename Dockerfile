@@ -22,6 +22,7 @@ RUN wget ${UTILS_BASE}/alpine/pick-mirror -O /usr/local/bin/pick-mirror; \
 COPY --from=builder /app/build/sshfs-admin-linux-x64 /app/sshfs-admin-linux-x64
 COPY web /app/web
 COPY scripts /app/scripts
-VOLUME /data
+WORKDIR /app
+VOLUME ["/data", "/data/sshfs/etc/root.ssh"]
 EXPOSE 8000
-ENTRYPOINT ["bash", "-c", "/app/sshfs-admin-linux-x64 >> /data/log/admin.log 2>>/data/log/error.log"]
+ENTRYPOINT ["/app/scripts/entrypoint"]

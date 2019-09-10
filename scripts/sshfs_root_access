@@ -3,6 +3,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 
 function ok() {
     scp -qF ./ssh.config ./host/* root@sshfs:/usr/local/bin/
+    ./sshfs echo ok > /dev/null 2>&1
     ./sshfs echo ok
 }
 
