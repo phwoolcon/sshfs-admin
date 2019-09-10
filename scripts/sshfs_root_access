@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
+cd "$(dirname "${BASH_SOURCE[0]}")"
 
 function ok() {
-    echo ok
+    scp -qF ./ssh.config ./host/* root@sshfs:/usr/local/bin/
+    ./sshfs echo ok
 }
 
 mkdir -p /data/.ssh
