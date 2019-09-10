@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width">
+<title>System settings - SSHFS Admin</title>
+<link rel="stylesheet" href="/admin/assets/style.css">
+<div class="wrapper">
+    <h1>SSHFS Admin</h1>
+    <div id="welcome"></div>
+    <div class="login-to-access">
+        <form id="sshfs_form" method="post">
+            <h3>SSHFS</h3>
+            <dl class="form-inputs">
+                <dt><label for="sshfs_host">Host</label></dt>
+                <dd><input id="sshfs_host" name="sshfs_host" required></dd>
+                <dt><label for="sshfs_port">Port</label></dt>
+                <dd><input type="number" id="sshfs_port" name="sshfs_port" min="1" max="65535" required></dd>
+            </dl>
+            <div>
+                <button type="submit">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="/admin/assets/onload.js"></script>

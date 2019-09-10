@@ -119,7 +119,7 @@ func getUserHash(name string) (hash string) {
 	crc32Byte := make([]byte, 4)
 	crc32Base64 := make([]byte, base64.RawURLEncoding.EncodedLen(len(crc32Byte)))
 	binary.LittleEndian.PutUint32(crc32Byte, crc32Checksum)
-	base64.RawURLEncoding.Encode(crc32Base64, []byte(crc32Byte))
+	base64.RawURLEncoding.Encode(crc32Base64, crc32Byte)
 	return string(crc32Base64)
 }
 
@@ -203,7 +203,7 @@ func routeEdit(context *gin.Context) {
 			return
 		}
 	}
-	context.JSON(http.StatusOK, gin.H{"user": newName})
+	context.JSON(http.StatusOK, gin.H{"user": newName, "message": "Changes saved"})
 }
 
 func routeList(context *gin.Context) {

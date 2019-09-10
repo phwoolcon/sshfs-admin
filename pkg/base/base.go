@@ -2,6 +2,8 @@ package base
 
 import (
 	"bytes"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-contrib/sessions"
@@ -28,8 +30,22 @@ type Config struct {
 func GetConfig() Config {
 	if !config.loaded {
 		loadConfig()
+		initHashSalt()
 	}
 	return config
+}
+
+func initHashSalt() {
+	if len(strings.TrimSpace(config.HashSalt)) >= 16 {
+		return
+	}
+	salt := make([]byte, 16)
+	saltBase64 := make([]byte, base64.RawURLEncoding.EncodedLen(len(salt)))
+	_, _ = rand.Read(salt)
+	base64.RawURLEncoding.Encode(saltBase64, salt)
+	config.HashSalt = string(saltBase64)[0:16]
+	fmt.Println("Generated hash salt: " + config.HashSalt)
+	SaveConfig(config)
 }
 
 func IsFile(name string) bool {
@@ -54,7 +70,6 @@ func loadConfig() {
 	}
 	fmt.Println("Loaded config " + ConfigFile)
 	config.loaded = true
-	fmt.Println(config)
 }
 
 func LocalExec(command string, arg ...string) (result []string) {
@@ -77,6 +92,23 @@ func Route404(context *gin.Context) {
 		return
 	}
 	context.HTML(http.StatusNotFound, "404.html", nil)
+}
+
+func SaveConfig(newConfig Config) {
+	configFile, err := os.OpenFile(ConfigFile, os.O_WRONLY|os.O_CREATE, 0644)
+	defer configFile.Close()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	jsonEncoder := json.NewEncoder(configFile)
+	jsonEncoder.SetIndent("", "    ")
+	err = jsonEncoder.Encode(newConfig)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	loadConfig()
 }
 
 func Session() gin.HandlerFunc {

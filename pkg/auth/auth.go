@@ -140,7 +140,7 @@ func routeLogin(context *gin.Context) {
 	}
 	session := sessions.Default(context)
 	session.Options(sessions.Options{
-		Path:     "/",
+		Path:     "/api/",
 		MaxAge:   user.SessionTtl,
 		HttpOnly: true,
 	})
@@ -153,7 +153,7 @@ func routeLogin(context *gin.Context) {
 func routeLogout(context *gin.Context) {
 	session := sessions.Default(context)
 	session.Options(sessions.Options{
-		Path:     "/",
+		Path:     "/api/",
 		MaxAge:   -1,
 		HttpOnly: true,
 	})

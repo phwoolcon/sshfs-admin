@@ -5,6 +5,7 @@ import (
 	"sshfs-admin/pkg/auth"
 	"sshfs-admin/pkg/base"
 	"sshfs-admin/pkg/depts"
+	"sshfs-admin/pkg/system"
 	"sshfs-admin/pkg/users"
 )
 
@@ -24,6 +25,7 @@ func setupRouter() *gin.Engine {
 	depts.SetupRouter(apiRouter)
 	users.SetupApiRouter(apiRouter)
 	users.SetupFrontRouter(router)
+	system.SetupRouter(apiRouter)
 
 	return router
 }

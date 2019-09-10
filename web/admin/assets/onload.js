@@ -156,6 +156,7 @@
                     if (!data.user) {
                         return;
                     }
+                    data.message && alert(data.message);
                     l.replace(l.origin + l.pathname + '?user=' + data.user);
                 });
                 e.preventDefault();
@@ -180,7 +181,23 @@
                     l.replace(newUrl);
                 });
             });
-        }
+        },
+        '/system': () => {
+            const sshfsForm = getElementById('sshfs_form');
+            apiRequest('system').then(data => {
+                const config = data.config;
+                config && Object.keys(config).map(k => {
+                    getElementById(k) && (getElementById(k).value = config[k]);
+                });
+            });
+            sshfsForm.addEventListener('submit', e => {
+                postFormUrlEncoded('system/sshfs', sshfsForm).then(data => {
+                    data.message && alert(data.message);
+                });
+                e.preventDefault();
+                return false;
+            });
+        },
     }, publicPages = ['/init', '/login', '/logout', '/front-download'];
 
     function init() {

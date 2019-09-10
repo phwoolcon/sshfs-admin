@@ -7,11 +7,11 @@ a, a:link, a:visited, a:hover, a:active{color:#333;}
 .hidden, .login-to-access{display:none;}
 h1{align-items:center;display:flex;justify-content:space-between;}
 h1 .version{font-size:12px;font-weight:normal;}
-form dl.form-inputs{display:flex;flex-wrap:wrap;}
-form dl.form-inputs > dt{flex-grow:1;margin:1em 0 0 0;width:33%;}
-form dl.form-inputs > dt label{display:block;}
-form dl.form-inputs > dd{flex-grow:1;margin:1em 0 0 0;width:66%;}
-form dl.form-inputs input, form dl.form-inputs .input{width:100%;}
+dl.form-inputs{display:flex;flex-wrap:wrap;}
+dl.form-inputs > dt{flex-grow:1;margin:1em 0 0 0;width:33%;}
+dl.form-inputs > dt label{display:block;}
+dl.form-inputs > dd{flex-grow:1;margin:1em 0 0 0;width:66%;}
+dl.form-inputs input, dl.form-inputs .input{width:100%;}
 form button[type=submit], .full-width-button{font-size:20px;height:50px;width:100%;}
 .full-width{width:100%;}
 #welcome{text-align:right;}
