@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+du -xhd1 /data/depts/ | sed '$ d; s|/data/depts/||g' | sort -fk2

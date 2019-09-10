@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+DEPT=$1
+ok () {
+    echo ok
+    echo Added department \"${DEPT}\" >> /data/log/sshfs.log
+}
+
+ls "/data/depts/${DEPT}" > /dev/null 2>&1 && { echo Department \"${DEPT}\" already exists; exit; } || echo
+2>>/data/log/sshfs.log mkdir "/data/depts/${DEPT}" && ok || echo Error creating department \"${DEPT}\"

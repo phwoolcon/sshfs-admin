@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+USERNAME=$1
+
+umount "/sshfs/${USERNAME}/0-share"
+umount "/sshfs/${USERNAME}/1-dept"
+umount "/sshfs/${USERNAME}/2-me"
+
+rm -d "/sshfs/${USERNAME}/0-share" "/sshfs/${USERNAME}/1-dept" "/sshfs/${USERNAME}/2-me"
+rm -d "/sshfs/${USERNAME}"

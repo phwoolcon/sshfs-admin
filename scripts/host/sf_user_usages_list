@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+du -xhs /data/users/*/me 2>/dev/null | sed 's|/data/users/||g; s|/me||g' | sort -fk2

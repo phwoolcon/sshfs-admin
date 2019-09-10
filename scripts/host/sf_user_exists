@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+ls /data/etc/fstab/$1 > /dev/null 2>&1 && echo 1 || echo 0

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+USERNAME=$1
+DEPT=$2
+
+DEPT_DIR="/data/depts/${DEPT}"
+
+sed "s|DEPT|${DEPT}|g; s|USERNAME|${USERNAME}|g" /etc/sshfs.fstab.tpl > "/data/etc/fstab/${USERNAME}"

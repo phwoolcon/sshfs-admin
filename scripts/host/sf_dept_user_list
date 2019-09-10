@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+grep -Er "/data/depts/${1} +/sshfs" /data/etc/fstab/ | sed -n 's|^/data/etc/fstab/\(\w\+\):/data.*$|\1|p'

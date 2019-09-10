@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+USERNAME=$1
+NEW_NAME=$2
+DEPT=$(sf_user_dept_list "${USERNAME}")
+PUB_KEY=$(cat "/data/users/${USERNAME}/.ssh/authorized_keys" 2>/dev/null)
+
+id -u "${USERNAME}" > /dev/null 2>&1 || { echo User \"${USERNAME}\" does not exists; exit; }
+id -u "${NEW_NAME}" > /dev/null 2>&1 && { echo User \"${NEW_NAME}\" already exists; exit; } || echo
+
+sf_user_unmount "${USERNAME}"
+sf_remove_user_fstab "${USERNAME}"
+
+usermod -l "${NEW_NAME}" -md "/data/users/${NEW_NAME}" "${USERNAME}"
+sf_user_add "${NEW_NAME}" "${DEPT}" "${PUB_KEY}"
+echo ok

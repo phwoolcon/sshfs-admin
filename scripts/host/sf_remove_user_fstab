@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+USERNAME=$1
+rm -f "/data/etc/fstab/${USERNAME}"

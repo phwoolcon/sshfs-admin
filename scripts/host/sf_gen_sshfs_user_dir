@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if [[ -z $1 ]]; then
+    exit
+fi
+USERNAME=$1
+SSHFS_DIR="/sshfs/${USERNAME}"
+mkdir -p "${SSHFS_DIR}/0-share" "${SSHFS_DIR}/1-dept" "${SSHFS_DIR}/2-me"

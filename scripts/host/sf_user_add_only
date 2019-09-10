@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+USERNAME=$1
+DEPT=$2
+PUB_KEY=$3
+
+id -u "${USERNAME}" > /dev/null 2>&1 && { echo User \"${USERNAME}\" already exists; exit; } || echo
+
+ls "/data/depts/${DEPT}" > /dev/null 2>&1 || { echo Department \"${DEPT}\" does not exist; exit; }
+sf_user_add "$@"
+echo ok

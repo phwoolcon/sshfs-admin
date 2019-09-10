@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+if (( $# != 3 )); then
+    echo "Usage:"
+    echo "$0 <username> <dept> \"<public key>\""
+    exit
+fi
+USERNAME=$1
+DEPT=${2:-$(sf_user_dept_list "${USERNAME}")}
+PUB_KEY=$3
+
+if [[ -z USERNAME ]]; then
+    echo Please specify username
+    exit
+fi
+
+if [[ -z DEPT ]]; then
+    echo Please specify department
+    exit
+fi
+
+HOME_DIR="/data/users/${USERNAME}"
+DEPT_DIR="/data/depts/${DEPT}"
+
+adduser -D -G sshfs -h "${HOME_DIR}" "${USERNAME}" 2>/dev/null
+passwd -u "${USERNAME}" > /dev/null
+
+addgroup "${USERNAME}" sshfs
+
+mkdir -p "${HOME_DIR}/.ssh" "${HOME_DIR}/me" "${DEPT_DIR}"
+sf_gen_sshfs_user_dir "${USERNAME}"
+echo "${PUB_KEY}" > "${HOME_DIR}/.ssh/authorized_keys"
+
+chown ${USERNAME}:sshfs "${HOME_DIR}/me/"
+chmod g+w "${HOME_DIR}/me/"
+chmod g+s "${HOME_DIR}/me/"
+
+chmod g+w /data/depts/*
+chmod g+s /data/depts/*
+
+sf_persist_users
+
+echo Added user \"${USERNAME}\" in department \"${DEPT}\" >> /data/log/sshfs.log
+
+sf_gen_user_fstab "${USERNAME}" "${DEPT}"
+sf_gen_fstab_and_mount

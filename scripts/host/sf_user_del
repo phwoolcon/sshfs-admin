@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+USERNAME=$1
+
+sf_user_unmount "${USERNAME}"
+deluser "${USERNAME}"
+
+sf_persist_users
+
+echo Deleted user \"${USERNAME}\" >> /data/log/sshfs.log
+
+sf_remove_user_fstab "${USERNAME}"
+sf_gen_fstab_and_mount

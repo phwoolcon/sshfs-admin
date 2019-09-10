@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+cp -a /etc/group /data/etc/group
+cp -a /etc/passwd /data/etc/passwd
+cp -a /etc/shadow /data/etc/shadow

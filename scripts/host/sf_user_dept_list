@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+sed -n 's|^/data/depts/\(\w\+\) */sshfs.*$|\1|p' "/data/etc/fstab/$1" 2>/dev/null || echo
