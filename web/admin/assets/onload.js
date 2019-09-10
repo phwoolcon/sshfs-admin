@@ -9,6 +9,12 @@
             apiRequest('users/count').then(data => {
                 data.count && (getElementById('user_count').innerHTML = '(' + data.count + ')');
             });
+            apiRequest('system/status').then(data => {
+                const status = data.status;
+                status && Object.keys(status).map(k => {
+                    getElementById(k) && (getElementById(k).innerHTML = status[k]);
+                });
+            });
         },
         '/init': () => {
             const form = getElementById('init_form');

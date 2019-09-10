@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+USED=$(du -bcxs /data/depts/ /data/users/ | tail -n1 | awk '{print $1}')
+FREE=$(df -B1 | grep /data | awk '{print $3}')
+TOTAL=$(( $USED + $FREE ))
+
+USED_H=$(numfmt --to iec --suffix B ${USED})
+FREE_H=$(numfmt --to iec --suffix B ${FREE})
+PERCENT=$(printf "%.2f" "$(( $FREE * 10000 / $TOTAL ))e-2" )
+
+echo ${USED_H} ${FREE_H} ${PERCENT}%
