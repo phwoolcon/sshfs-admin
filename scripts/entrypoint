@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-mkdir -p /data/log
+mkdir -p /data/log /data/session
 cd /app
 ./sshfs-admin-linux-x64 >> /data/log/admin.log 2>>/data/log/error.log
