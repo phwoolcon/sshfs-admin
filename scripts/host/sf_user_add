@@ -23,7 +23,7 @@ HOME_DIR="/data/users/${USERNAME}"
 DEPT_DIR="/data/depts/${DEPT}"
 
 adduser -D -G sshfs -h "${HOME_DIR}" "${USERNAME}" 2>/dev/null
-passwd -u "${USERNAME}" > /dev/null
+passwd -du "${USERNAME}" > /dev/null
 
 addgroup "${USERNAME}" sshfs
 
