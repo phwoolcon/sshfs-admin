@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 USED=$(du -bcxs /data/depts/ /data/users/ | tail -n1 | awk '{print $1}')
-FREE=$(df -B1 | grep /data | awk '{print $3}')
+FREE=$(df -B1 | grep /data | awk '{print $4}')
 TOTAL=$(( $USED + $FREE ))
 
 USED_H=$(numfmt --to iec --suffix B ${USED})
