@@ -150,8 +150,8 @@ func routeCreate(context *gin.Context) {
 }
 
 func routeCount(context *gin.Context) {
-	users := sshfs.GetUsers()
-	context.JSON(http.StatusOK, gin.H{"count": len(users)})
+	count := sshfs.GetUserCount()[0]
+	context.JSON(http.StatusOK, gin.H{"count": count})
 }
 
 func routeDetails(context *gin.Context) {

@@ -14,12 +14,12 @@ func CreateUser(name, department string) (result []string) {
 	return result
 }
 
-func GetUserDepartments(name string) (result []string) {
-	return sshfsExec(fmt.Sprintf(`sf_user_dept_list "%s"`, name))
+func GetUserCount() (users []string) {
+	return sshfsExec("sf_user_list | wc -l")
 }
 
-func GetUsers() (users []string) {
-	return sshfsExec("sf_user_list")
+func GetUserDepartments(name string) (result []string) {
+	return sshfsExec(fmt.Sprintf(`sf_user_dept_list "%s"`, name))
 }
 
 func GetUsersWithUsages() (users []string) {
