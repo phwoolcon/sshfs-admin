@@ -62,7 +62,7 @@ func routeList(context *gin.Context) {
 
 func routeOptions(context *gin.Context) {
 	options := make(map[string]string)
-	for _, department := range sshfs.GetDepartmentCount() {
+	for _, department := range sshfs.GetDepartments() {
 		options[department] = department
 	}
 	context.JSON(http.StatusOK, gin.H{"options": options})

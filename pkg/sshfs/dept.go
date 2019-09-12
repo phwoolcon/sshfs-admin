@@ -8,6 +8,10 @@ func GetDepartmentCount() (departments []string) {
 	return sshfsExec("sf_dept_list | wc -l")
 }
 
+func GetDepartments() (departments []string) {
+	return sshfsExec("sf_dept_list")
+}
+
 func GetDepartmentsWithUsages() (departments []string) {
 	return sshfsExec("sf_dept_usages_list")
 }
