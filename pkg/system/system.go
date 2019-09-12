@@ -54,7 +54,8 @@ func routeStatus(context *gin.Context) {
 	if len(usages) >= 3 {
 		status["used"] = usages[0]
 		status["free"] = usages[1]
-		status["free_percent"] = usages[2]
+		status["total"] = usages[2]
+		status["free_percent"] = usages[3]
 	}
 	context.JSON(http.StatusOK, gin.H{"status": status})
 }

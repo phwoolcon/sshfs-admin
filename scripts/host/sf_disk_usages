@@ -4,8 +4,9 @@ USED=$(du -bcxs /data/depts/ /data/users/ | tail -n1 | awk '{print $1}')
 FREE=$(df -B1 | grep /data | awk '{print $4}')
 TOTAL=$(( $USED + $FREE ))
 
-USED_H=$(numfmt --to iec --suffix B ${USED})
-FREE_H=$(numfmt --to iec --suffix B ${FREE})
+USED_H=$(numfmt --to iec --format '%.2f' --suffix B ${USED})
+FREE_H=$(numfmt --to iec --format '%.2f' --suffix B ${FREE})
+TOTAL_H=$(numfmt --to iec --format '%.2f' --suffix B ${TOTAL})
 PERCENT=$(printf "%.2f" "$(( $FREE * 10000 / $TOTAL ))e-2" )
 
-echo ${USED_H} ${FREE_H} ${PERCENT}%
+echo ${USED_H} ${FREE_H} ${TOTAL_H} ${PERCENT}%

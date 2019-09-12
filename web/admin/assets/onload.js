@@ -13,7 +13,7 @@
                 const status = data.status;
                 status && Object.keys(status).map(k => {
                     getElementById(k) && (getElementById(k).innerHTML = status[k]);
-                });
+                }) && status.free_percent && (getElementById('usage_bar_free').style.width = status.free_percent);
             });
         },
         '/init': () => {

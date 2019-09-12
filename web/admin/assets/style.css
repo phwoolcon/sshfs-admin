@@ -21,3 +21,5 @@ form button[type=submit], .full-width-button{font-size:20px;height:50px;width:10
 .toolbar{text-align:right;}
 .download-grid{display:grid;grid-gap:1em;grid-template-columns:1fr 1fr;}
 kbd{border:1px solid #ccc;border-radius:3px;display:inline-block;font-size:12px;height:20px;line-height:20px;padding:0 5px;}
+#usage_bar{background:#55f;border:1px solid #ccc;height:7px;overflow:hidden;width:100%;}
+#usage_bar_free{background:#fff;height:100%;margin-left:auto;}

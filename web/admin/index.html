@@ -13,13 +13,12 @@
         <li><a href="/admin/system.html">System Settings</a></li>
     </ul>
     <h3>Disk usage</h3>
-    <dl class="form-inputs">
-        <dt>Used</dt>
-        <dd id="used"></dd>
-        <dt>Free</dt>
-        <dd id="free"></dd>
-        <dt>Free %</dt>
-        <dd id="free_percent"></dd>
-    </dl>
+    <p>
+        <span id="used">0</span> used / <span id="total">0</span> total,
+        <span id="free_percent">0%</span> free (<span id="free">0</span>)
+    </p>
+    <div id="usage_bar">
+        <div id="usage_bar_free"></div>
+    </div>
 </div>
 <script src="/admin/assets/onload.js"></script>
