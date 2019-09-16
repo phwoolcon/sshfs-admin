@@ -1,7 +1,7 @@
 ((w, d, l) => {
     let loggedInUser = null, version = "dev", createAdmin = false;
 
-    const pagePrefix = '/admin', pageSuffix = '.html', console = w.console, pageEvents = {
+    const pagePrefix = '/admin', console = w.console, pageEvents = {
         '/': () => {
             apiRequest('depts/count').then(data => {
                 data.count && (getElementById('dept_count').innerHTML = '(' + data.count + ')');
@@ -116,7 +116,7 @@
                         }
                         data.users.forEach(user => {
                             const li = newElement('li');
-                            li.innerHTML = '<a href="/admin/users/details.html?user={user}">{user}</a> ({usage})'
+                            li.innerHTML = '<a href="/admin/users/details?user={user}">{user}</a> ({usage})'
                                 .replace(/{user}/g, user.name).replace(/{usage}/g, user.usage);
                             userList.appendChild(li)
                         });
@@ -282,7 +282,7 @@
         if (l.pathname.startsWith('/download/')) {
             return '/front-download';
         }
-        return l.pathname.slice(pagePrefix.length, -pageSuffix.length) || '/';
+        return l.pathname.replace(/.html$/, '').slice(pagePrefix.length) || '/';
     }
 
     function getUrlParam(name) {
@@ -362,7 +362,7 @@
     }
 
     function pageUrl(route) {
-        return pagePrefix + (route.charAt(0) === '/' ? '' : '/') + (route ? route + pageSuffix : '');
+        return pagePrefix + (route.charAt(0) === '/' ? '' : '/') + route;
     }
 
     /**

@@ -2,11 +2,13 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"path/filepath"
 	"sshfs-admin/pkg/auth"
 	"sshfs-admin/pkg/base"
 	"sshfs-admin/pkg/depts"
 	"sshfs-admin/pkg/system"
 	"sshfs-admin/pkg/users"
+	"strings"
 )
 
 var GinMode = ""
@@ -36,7 +38,7 @@ func main() {
 }
 
 func setupRouter(router *gin.Engine) {
-	router.Static("/admin", "./web/admin")
+	setupStaticRouter(router)
 	router.LoadHTMLFiles("./web/admin/404.html", "./web/admin/download.html")
 	router.NoRoute(base.Route404)
 
@@ -48,4 +50,19 @@ func setupRouter(router *gin.Engine) {
 	users.SetupApiRouter(apiRouter)
 	users.SetupFrontRouter(router)
 	system.SetupRouter(apiRouter)
+}
+
+func setupStaticRouter(router *gin.Engine) {
+	staticRouter := router.Group("/admin")
+	staticRouter.Use(func(context *gin.Context) {
+		filePath := context.Request.URL.Path
+		if strings.HasSuffix(filePath, "/") || strings.ContainsRune(filepath.Base(filePath), '.') {
+			context.Next()
+			return
+		}
+		context.Params[0].Value += ".html"
+		context.Request.URL.Path += ".html"
+		context.Next()
+	})
+	staticRouter.Static("", "./web/admin")
 }
