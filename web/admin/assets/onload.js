@@ -189,15 +189,15 @@
             });
         },
         '/system': () => {
-            const sshfsForm = getElementById('sshfs_form');
-            apiRequest('system').then(data => {
+            const settingsForm = getElementById('settings_form');
+            apiRequest('system/settings').then(data => {
                 const config = data.config;
                 config && Object.keys(config).map(k => {
                     getElementById(k) && (getElementById(k).value = config[k]);
                 });
             });
-            sshfsForm.addEventListener('submit', e => {
-                postFormUrlEncoded('system/sshfs', sshfsForm).then(data => {
+            settingsForm.addEventListener('submit', e => {
+                postFormUrlEncoded('system/settings', settingsForm).then(data => {
                     data.message && alert(data.message);
                 });
                 e.preventDefault();

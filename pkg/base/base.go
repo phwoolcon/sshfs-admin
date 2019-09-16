@@ -3,6 +3,7 @@ package base
 import (
 	"bytes"
 	"crypto/rand"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -25,6 +26,8 @@ type Config struct {
 	HashSalt  string `json:"hash_salt"`
 	SshfsHost string `json:"sshfs_host"`
 	SshfsPort string `json:"sshfs_port"`
+	HttpsHost string `json:"https_host"`
+	HttpsPort string `json:"https_port"`
 }
 
 func GetConfig() Config {
@@ -33,6 +36,17 @@ func GetConfig() Config {
 		initHashSalt()
 	}
 	return config
+}
+
+func HasTlsCert(certFile, keyFile string) bool {
+	if !IsFile(certFile) || !IsFile(keyFile) {
+		return false
+	}
+	_, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		return false
+	}
+	return true
 }
 
 func initHashSalt() {
@@ -54,6 +68,11 @@ func IsFile(name string) bool {
 		return false
 	}
 	return !info.IsDir()
+}
+
+func IsTls(context *gin.Context) bool {
+	request := context.Request
+	return request.URL.Scheme == "https" || request.TLS != nil || context.GetHeader("x-forwarded-proto") == "https"
 }
 
 func loadConfig() {
@@ -86,6 +105,22 @@ func LocalExec(command string, arg ...string) (result []string) {
 	return result
 }
 
+func RedirectToHttpsMiddleware(context *gin.Context) {
+	if IsTls(context) {
+		context.Next()
+		return
+	}
+	GetConfig()
+	url := *context.Request.URL
+	url.Scheme = "https"
+	url.Host = config.HttpsHost
+	if config.HttpsPort != "443" {
+		url.Host += ":" + config.HttpsPort
+	}
+	context.Redirect(http.StatusFound, url.String())
+	context.Abort()
+}
+
 func Route404(context *gin.Context) {
 	if strings.HasPrefix(context.Request.RequestURI, "/api/") {
 		context.JSON(http.StatusNotFound, gin.H{"error": "404 not found"})
@@ -111,7 +146,7 @@ func SaveConfig(newConfig Config) {
 	loadConfig()
 }
 
-func Session() gin.HandlerFunc {
+func SessionMiddleware() gin.HandlerFunc {
 	return sessions.Sessions("auth", session.NewFileStore("/data/session", []byte("secret")))
 }
 

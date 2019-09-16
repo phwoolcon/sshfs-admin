@@ -9,37 +9,43 @@ import (
 	"sshfs-admin/pkg/users"
 )
 
-var GinMode string
-var Version string = "dev"
+var GinMode = ""
+var Version = "dev"
 
-func setupRouter() *gin.Engine {
-	router := gin.Default()
+func setupRouter(router *gin.Engine) {
 	router.Static("/admin", "./web/admin")
 	router.LoadHTMLFiles("./web/admin/404.html", "./web/admin/download.html")
 	router.NoRoute(base.Route404)
 
 	apiRouter := router.Group("/api")
-	apiRouter.Use(base.Session())
+	apiRouter.Use(base.SessionMiddleware())
 
 	auth.SetupRouter(apiRouter)
 	depts.SetupRouter(apiRouter)
 	users.SetupApiRouter(apiRouter)
 	users.SetupFrontRouter(router)
 	system.SetupRouter(apiRouter)
-
-	return router
 }
 
 func main() {
-	if GinMode == "release" {
-		gin.SetMode(gin.ReleaseMode)
-	}
+	gin.SetMode(GinMode)
 	accessStatus := base.SshfsRootAccess()
 	if accessStatus[0] != "ok" {
 		panic(accessStatus)
 	}
 	base.Version = Version
-	engine := setupRouter()
-	// Listen and Server in 0.0.0.0:8080
+
+	engine := gin.Default()
+
+	if len(base.GetConfig().HttpsHost) > 0 {
+		engine.Use(base.RedirectToHttpsMiddleware)
+	}
+	setupRouter(engine)
+	tlsCertFile := "/data/tls/cert"
+	tlsKeyFile := "/data/tls/key"
+	hasTlsCert := base.HasTlsCert(tlsCertFile, tlsKeyFile)
+	if hasTlsCert {
+		go engine.RunTLS(":8443", tlsCertFile, tlsKeyFile)
+	}
 	engine.Run(":8000")
 }

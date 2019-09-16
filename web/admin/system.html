@@ -7,13 +7,21 @@
     <h1>SSHFS Admin</h1>
     <div id="welcome"></div>
     <div class="login-to-access">
-        <form id="sshfs_form" method="post">
+        <form id="settings_form" method="post">
             <h3>SSHFS</h3>
             <dl class="form-inputs">
                 <dt><label for="sshfs_host">Host</label></dt>
                 <dd><input id="sshfs_host" name="sshfs_host" required></dd>
                 <dt><label for="sshfs_port">Port</label></dt>
                 <dd><input type="number" id="sshfs_port" name="sshfs_port" min="1" max="65535" required></dd>
+            </dl>
+            <h3>Web</h3>
+            <p>HTTPS settings (leave blank to use HTTP only)</p>
+            <dl class="form-inputs">
+                <dt><label for="https_host">HTTPS Host</label></dt>
+                <dd><input id="https_host" name="https_host"></dd>
+                <dt><label for="https_port">HTTPS port</label></dt>
+                <dd><input type="number" id="https_port" name="https_port" min="1" max="65535"></dd>
             </dl>
             <div>
                 <button type="submit">Save</button>

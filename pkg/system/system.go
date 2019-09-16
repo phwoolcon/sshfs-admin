@@ -15,9 +15,9 @@ import (
 func SetupRouter(apiRouter *gin.RouterGroup) {
 	route := apiRouter.Group("/system")
 	route.Use(auth.LoginRequiredMiddleware)
-	route.GET("", routeGetConfig)
+	route.GET("settings", routeGetConfig)
 	route.GET("/status", routeStatus)
-	route.POST("/sshfs", routeSaveSshfsConfig)
+	route.POST("/settings", routeSaveSettings)
 }
 
 func routeGetConfig(context *gin.Context) {
@@ -29,21 +29,34 @@ func routeGetConfig(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
-func routeSaveSshfsConfig(context *gin.Context) {
+func routeSaveSettings(context *gin.Context) {
 	config := base.GetConfig()
-	host := context.PostForm("sshfs_host")
-	port := context.PostForm("sshfs_port")
-	if !verifyHost(host) {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid host"})
+	sshfsHost := context.PostForm("sshfs_host")
+	sshfsPort := context.PostForm("sshfs_port")
+	httpsHost := context.PostForm("https_host")
+	httpsPort := context.PostForm("https_port")
+	if !verifyHost(sshfsHost) {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid sshfs host"})
 		return
 	}
-	portNum, err := strconv.Atoi(port)
-	if err != nil || portNum < 1 || portNum > 65535 {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "Port must be a integer between 1 and 65535"})
+	sshfsPortNum, err := strconv.Atoi(sshfsPort)
+	if err != nil || sshfsPortNum < 1 || sshfsPortNum > 65535 {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Sshfs port must be an integer between 1 and 65535"})
 		return
 	}
-	config.SshfsHost = host
-	config.SshfsPort = port
+	if len(httpsHost) > 0 && !verifyHost(httpsHost) {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid https host"})
+		return
+	}
+	httpsPortNum, err := strconv.Atoi(httpsPort)
+	if len(httpsPort) > 0 && (err != nil || httpsPortNum < 1 || httpsPortNum > 65535) {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Https port must be an integer between 1 and 65535"})
+		return
+	}
+	config.SshfsHost = sshfsHost
+	config.SshfsPort = sshfsPort
+	config.HttpsHost = httpsHost
+	config.HttpsPort = httpsPort
 	base.SaveConfig(config)
 	context.JSON(http.StatusOK, gin.H{"message": "Changes saved"})
 }
