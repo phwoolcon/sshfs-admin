@@ -24,5 +24,5 @@ COPY web /app/web
 COPY scripts /app/scripts
 WORKDIR /app
 VOLUME ["/data", "/data/sshfs/etc/root.ssh"]
-EXPOSE 8000
+EXPOSE 8000 8443
 ENTRYPOINT ["/app/scripts/entrypoint"]
