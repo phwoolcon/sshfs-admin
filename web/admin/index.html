@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#2f3ba2">
 <title>SSHFS Admin</title>
 <link rel="stylesheet" href="/admin/assets/style.css">
+<link rel="manifest" href="/admin/assets/manifest.json">
+<link rel="apple-touch-icon" href="/admin/assets/logo.png">
 <div class="wrapper">
     <h1>SSHFS Admin</h1>
     <div id="welcome"></div>
@@ -22,3 +25,6 @@
     </div>
 </div>
 <script src="/admin/assets/onload.js"></script>
+<script>
+    navigator.serviceWorker && navigator.serviceWorker.register('/admin/sw.js');
+</script>

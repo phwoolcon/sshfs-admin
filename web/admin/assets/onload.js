@@ -1,5 +1,5 @@
 ((w, d, l) => {
-    let loggedInUser = null, version = "dev", createAdmin = false;
+    let offline = false, loggedInUser = null, version = "dev", createAdmin = false;
 
     const pagePrefix = '/admin', console = w.console, pageEvents = {
         '/': () => {
@@ -208,8 +208,14 @@
 
     function init() {
         const pageRoute = getPageRoute(), loginToAccess = getElementsBySelector('.login-to-access'),
-            header = getElementsBySelector('h1')[0], versionSpan = newElement('span');
+            header = getElementsBySelector('h1')[0], versionSpan = newElement('span'),
+            wrapper = getElementsBySelector('.wrapper')[0];
         console.debug(loggedInUser, pageRoute);
+        if (offline) {
+            wrapper && (wrapper.innerHTML = '<h1>SSHFS Admin</h1><h3>No network connection</h3>' +
+                '<p><a href="javascript:location.reload()">Please refresh</a> when the network becomes available</p>');
+            return;
+        }
         if (!createAdmin && pageRoute === '/init') {
             navigateTo('/index');
             return;
@@ -264,6 +270,7 @@
 
     function checkLoginStatus() {
         return apiRequest('auth/status').then(data => {
+            offline = !!data.offline;
             loggedInUser = data.username;
             version = data.version;
             createAdmin = !!data.create_admin;

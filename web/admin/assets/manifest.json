@@ -1,0 +1,15 @@
+{
+  "name": "SSHFS Admin",
+  "short_name": "SSHFS Admin",
+  "display": "standalone",
+  "start_url": "/admin/",
+  "theme_color": "#8888ff",
+  "background_color": "#aaaaff",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
