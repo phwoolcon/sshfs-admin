@@ -9,10 +9,10 @@ import (
 	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/phwoolcon/gin-utils/session"
 	"net/http"
 	"os"
 	"os/exec"
-	"sshfs-admin/pkg/session"
 	"strings"
 )
 
