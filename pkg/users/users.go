@@ -141,6 +141,13 @@ func routeCreate(context *gin.Context) {
 		})
 		return
 	}
+	if !verifyName(department) {
+		fmt.Println("Invalid department name: " + department)
+		context.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid department",
+		})
+		return
+	}
 	result := sshfs.CreateUser(name, department)
 	if result[0] != "ok" {
 		context.JSON(http.StatusBadRequest, gin.H{"error": result[0]})
