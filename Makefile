@@ -1,3 +1,5 @@
+.PHONY: build clean
+
 build:
 	@go version
 	GOOS=linux GOARCH=amd64 GO111MODULE=on go build -mod=vendor -v \

@@ -10,6 +10,8 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/phwoolcon/gin-utils/session"
+	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -17,6 +19,7 @@ import (
 )
 
 const ConfigFile string = "/data/config.json"
+const SshfsHostFile string = "/data/sshfs_host"
 
 var config Config
 var Version string
@@ -36,6 +39,19 @@ func GetConfig() Config {
 		initHashSalt()
 	}
 	return config
+}
+
+// Get preferred outbound ip of this machine https://stackoverflow.com/a/37382208/802646
+func GetOutboundIP() net.IP {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+	return localAddr.IP
 }
 
 func HasTlsCert(certFile, keyFile string) bool {
@@ -89,6 +105,8 @@ func loadConfig() {
 	}
 	fmt.Println("Loaded config " + ConfigFile)
 	config.loaded = true
+	config.SshfsHost = LocalExec("cat", SshfsHostFile)[0]
+	config.SshfsPort = LocalExec("cat", SshfsHostFile)[1]
 }
 
 func LocalExec(command string, arg ...string) (result []string) {
