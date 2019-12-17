@@ -11,7 +11,9 @@ import (
 	"sshfs-admin/pkg/auth"
 	"sshfs-admin/pkg/base"
 	"sshfs-admin/pkg/sshfs"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type UserUsage struct {
@@ -35,6 +37,7 @@ func SetupFrontRouter(router *gin.Engine) {
 	router.GET("/download/:token/key", frontRouteDownloadKey)
 	router.GET("/api/users/has-key/:token", frontRouteHasKey)
 	router.POST("/api/users/regenerate-key/:token", frontRouteRegenerateKey)
+	router.POST("/api/users/front-create", frontRouteCreate)
 }
 
 func convertTokenToUserName(tokenString string) string {
@@ -52,6 +55,11 @@ func convertTokenToUserName(tokenString string) string {
 		return ""
 	}
 	return name
+}
+
+func frontRouteCreate(context *gin.Context) {
+	context.Set("front-create", true)
+	routeCreate(context)
 }
 
 func frontRouteDownloadConfig(context *gin.Context) {
@@ -110,7 +118,7 @@ func frontRouteRegenerateKey(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": result[0]})
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"new_token": name + "~" + getUserHash(name)})
+	context.JSON(http.StatusOK, gin.H{"new_token": getUserToken(name)})
 }
 
 func getUserHash(name string) (hash string) {
@@ -121,6 +129,10 @@ func getUserHash(name string) (hash string) {
 	binary.LittleEndian.PutUint32(crc32Byte, crc32Checksum)
 	base64.RawURLEncoding.Encode(crc32Base64, crc32Byte)
 	return string(crc32Base64)
+}
+
+func getUserToken(name string) string {
+	return name + "~" + getUserHash(name)
 }
 
 func hasPrivateKey(token string) bool {
@@ -137,7 +149,7 @@ func routeCreate(context *gin.Context) {
 	if !verifyName(name) {
 		fmt.Println("Invalid user name: " + name)
 		context.JSON(http.StatusBadRequest, gin.H{
-			"error": "User name must begin with a letter, and be between 3 and 15 characters of \"A-Za-z0-9.-_\"",
+			"error": "User name must begin with a letter, and be between 3 and 32 characters of \"A-Za-z0-9.-_\"",
 		})
 		return
 	}
@@ -148,12 +160,41 @@ func routeCreate(context *gin.Context) {
 		})
 		return
 	}
+	if front, hasValue := context.Get("front-create"); hasValue && front.(bool) {
+		t := context.PostForm("t")
+		timestamp, _ := strconv.Atoi(t)
+		if int64(timestamp) < time.Now().Unix()-600 {
+			fmt.Println("Invalid t:", t)
+			context.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid t",
+			})
+			return
+		}
+		hash := base.GetMD5Hash(name + department + string(t) + base.GetConfig().HashSalt)
+		sign := context.PostForm("sign")
+		if sign != hash {
+			fmt.Println("Invalid sign:", sign, "expected:", hash)
+			context.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid sign",
+			})
+			return
+		}
+		sshfs.CreateDepartment(department)
+	}
 	result := sshfs.CreateUser(name, department)
 	if result[0] != "ok" {
 		context.JSON(http.StatusBadRequest, gin.H{"error": result[0]})
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{})
+	// TODO Generate https link
+	linkScheme := "http"
+	linkHost := base.GetConfig().SshfsHost
+	linkPort := base.GetConfig().RawHttpPort
+	if linkPort != "80" {
+		linkHost += ":" + linkPort
+	}
+	context.JSON(http.StatusOK, gin.H{"usage": fmt.Sprintf(`Open this link to download client and config:
+%s://%s/download/%s`, linkScheme, linkHost, getUserToken(name))})
 }
 
 func routeCount(context *gin.Context) {
@@ -174,7 +215,7 @@ func routeDetails(context *gin.Context) {
 		return
 	}
 	department := sshfs.GetUserDepartments(user)[0]
-	context.JSON(http.StatusOK, gin.H{"dept": department, "token": user + "~" + getUserHash(user)})
+	context.JSON(http.StatusOK, gin.H{"dept": department, "token": getUserToken(user)})
 }
 
 func routeEdit(context *gin.Context) {
@@ -183,7 +224,7 @@ func routeEdit(context *gin.Context) {
 	newDepartment := context.PostForm("dept")
 	if !verifyName(newName) || !verifyName(name) {
 		context.JSON(http.StatusBadRequest, gin.H{
-			"error": "User name must begin with a letter, and be between 3 and 15 characters of \"A-Za-z0-9.-_\"",
+			"error": "User name must begin with a letter, and be between 3 and 32 characters of \"A-Za-z0-9.-_\"",
 		})
 		return
 	}
@@ -227,6 +268,6 @@ func routeList(context *gin.Context) {
 }
 
 func verifyName(name string) bool {
-	validName := regexp.MustCompile(`^[A-Za-z][\w.\-]{2,14}$`)
+	validName := regexp.MustCompile(`^[\w.\-]{3,32}$`)
 	return validName.MatchString(name)
 }

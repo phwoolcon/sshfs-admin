@@ -2,9 +2,11 @@ package base
 
 import (
 	"bytes"
+	"crypto/md5"
 	"crypto/rand"
 	"crypto/tls"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-contrib/sessions"
@@ -25,12 +27,13 @@ var config Config
 var Version string
 
 type Config struct {
-	loaded    bool
-	HashSalt  string `json:"hash_salt"`
-	SshfsHost string `json:"sshfs_host"`
-	SshfsPort string `json:"sshfs_port"`
-	HttpsHost string `json:"https_host"`
-	HttpsPort string `json:"https_port"`
+	loaded      bool
+	HashSalt    string `json:"hash_salt"`
+	SshfsHost   string `json:"sshfs_host"`
+	SshfsPort   string `json:"sshfs_port"`
+	RawHttpPort string `json:"raw_http_port"`
+	HttpsHost   string `json:"https_host"`
+	HttpsPort   string `json:"https_port"`
 }
 
 func GetConfig() Config {
@@ -39,6 +42,12 @@ func GetConfig() Config {
 		initHashSalt()
 	}
 	return config
+}
+
+func GetMD5Hash(text string) string {
+	hasher := md5.New()
+	hasher.Write([]byte(text))
+	return hex.EncodeToString(hasher.Sum(nil))
 }
 
 // Get preferred outbound ip of this machine https://stackoverflow.com/a/37382208/802646
@@ -105,8 +114,10 @@ func loadConfig() {
 	}
 	fmt.Println("Loaded config " + ConfigFile)
 	config.loaded = true
-	config.SshfsHost = LocalExec("cat", SshfsHostFile)[0]
-	config.SshfsPort = LocalExec("cat", SshfsHostFile)[1]
+	hostConfig := LocalExec("cat", SshfsHostFile)
+	config.SshfsHost = hostConfig[0]
+	config.SshfsPort = hostConfig[1]
+	config.RawHttpPort = hostConfig[2]
 }
 
 func LocalExec(command string, arg ...string) (result []string) {
